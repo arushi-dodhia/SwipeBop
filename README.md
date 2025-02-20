@@ -17,32 +17,18 @@ SwipeBop is an **interactive, Tinder-like fashion discovery platform** designed 
 ## Architecture Overview  
 SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS services**:
 
-1️⃣ **Frontend**: React.js (Hosted on AWS Amplify)  
-2️⃣ **Backend**: Node.js with Express.js (Hosted on AWS Lambda)  
+1️⃣ **Frontend**: React.js
+2️⃣ **Backend**: Python 
 3️⃣ **Database**: DynamoDB for fast, scalable storage  
-4️⃣ **Compute**: AWS EC2 for backend processing (alternative to serverless Lambda)  
-5️⃣ **API Gateway**: Handles HTTP requests, routing to Lambda functions  
-
-### **AWS Services Used**  
-| **Service** | **Purpose** |
-|------------|------------|
-| **EC2** | Hosts backend services if not using serverless (Lambda). Manages persistent API services. |
-| **DynamoDB** | NoSQL database for storing user interactions, liked items, and recommendations. |
-| **Lambda** | Serverless execution of backend logic triggered by API Gateway. |
-| **API Gateway** | Manages API requests from the frontend to backend services. |
-| **Amplify** | Hosting and deployment for frontend UI. |
+4️⃣ **Compute**: AWS EC2 for backend processing
 
 ---
 
 ## 🛠️ Tech Stack  
 - **Frontend**: React.js, Tailwind CSS, AWS Amplify  
-- **Backend**: Node.js, Express.js, Python, AWS Lambda  
+- **Backend**: Node.js, Python, AWS Lambda  
 - **Database**: AWS DynamoDB  
 - **APIs**: Shopbop API for fetching fashion products   
-
----
-
-## Getting Started 
 
 ---
 
