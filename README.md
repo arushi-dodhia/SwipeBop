@@ -14,7 +14,7 @@ SwipeBop is an **interactive, Tinder-like fashion discovery platform** designed 
 
 ---
 
-## 🏗️ Architecture Overview  
+## Architecture Overview  
 SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS services**:
 
 1️⃣ **Frontend**: React.js (Hosted on AWS Amplify)  
@@ -57,7 +57,7 @@ SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS servic
 
 ## 🛠️ Contributors  
 
-Meet the **talented team** behind SwipeBop! 🚀  
+Meet the **team** behind SwipeBop! 🚀  
 
 | Name | GitHub | Role |
 |------|--------|------|
@@ -65,7 +65,7 @@ Meet the **talented team** behind SwipeBop! 🚀
 | **Arushi Dodhia** | (https://github.com/arushi-dodhia) | Frontend Development |
 | **Ziyuan Xue** | () | UI/UX Designer |
 | **Raihan Tanvir** | (https://github.com/nabitanvir) | Backend Development |
-| **Ryan Rumao ** | (https://github.com/ryan-24-7) | Backend Development |
+| **Ryan Rumao** | (https://github.com/ryan-24-7) | Backend Development |
 
 
 ---
