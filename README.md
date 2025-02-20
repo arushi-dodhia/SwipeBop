@@ -17,8 +17,8 @@ SwipeBop is an **interactive, Tinder-like fashion discovery platform** designed 
 ## Architecture Overview  
 SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS services**:
 
-1️⃣ **Frontend**: React.js
-2️⃣ **Backend**: Python 
+1️⃣ **Frontend**: React.js  
+2️⃣ **Backend**: Python                       
 3️⃣ **Database**: DynamoDB for fast, scalable storage  
 4️⃣ **Compute**: AWS EC2 for backend processing
 
