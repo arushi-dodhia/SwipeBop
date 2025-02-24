@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import MultiCenterGradient from './gradient';
 
 const styles = {
   container: {
@@ -8,27 +9,30 @@ const styles = {
     lineHeight: 1.6,
   },
   gradientContainer: {
+    position: "relative",
     background: `
-      radial-gradient(circle at center, 
-        rgba(255, 220, 220, 1) 0%, 
-        rgba(240, 160, 140, 1) 30%, 
-        rgba(180, 120, 200, 1) 65%, 
-        rgba(130, 100, 230, 1) 100%
-      )`,
-    backgroundSize: 'cover',
-    height: '100vh',
-    position: 'relative', 
-    overflow: 'hidden',
+      linear-gradient(135deg, 
+        rgba(255, 170, 150, 1) 0%, 
+        rgba(220, 170, 200, 1) 40%, 
+        rgba(170, 180, 220, 1) 70%,
+        rgba(150, 180, 210, 1) 100%)
+    `,
+    backgroundColor: "transparent", 
+    backgroundSize: "200% 200%",
+    backgroundPosition: "center",
+    height: "100vh",
+    overflow: "hidden",
+
   },
   noiseOverlay: {
-    position: "absolute",
+    position: "relative",
     top: 0,
     left: 0,
     width: "100%",
     height: "100%",
-    background: "url('path-to-noise-texture.png')", 
-    opacity: 0.2, 
-    pointerEvents: "none", 
+    background: "url('/Users/arushidodhia/Desktop/CS620/SwipeBop/public/images/noise.png')",
+    opacity: 0.2,
+    zIndex: 2, 
   },
   nav: {
     display: 'flex',
@@ -50,9 +54,10 @@ const styles = {
     padding: '4rem 0',
   },
   h1: {
-    fontSize: '3.5rem',
-    fontWeight: 'normal',
+    fontWeight: 'light-bold',
     marginBottom: '1rem',
+    color: "white"
+
   },
   subtitle: {
     fontSize: '1.2rem',
@@ -129,28 +134,30 @@ const styles = {
   },
 };
 
+
 const LandingPage = () => {
   return (
     <div style={styles.container}>
-      <nav style={styles.nav}>
-        <a href="#" style={styles.navLink}>Swiping</a>
-        <a href="#" style={styles.navLink}>About</a>
-        <a href="#" style={styles.navLink}>Contact</a>
-        <a href="#" style={styles.navLink}>Cart</a>
-        <a href="#" style={styles.navLink}>Log In</a>
-      </nav>
-
-      <div style={styles.mainContainer}>
-        <div style = {styles.gradientContainer}>
-          <section style={styles.hero}>
-            <h1 style={{...styles.h1, fontStyle: 'italic'}}>s w i p e b o p</h1>
-            <p style={styles.subtitle}>
-              Effortless fashion at your fingertips<br />
-              — swipe, match, and style
-            </p>
-            <button style={styles.button}>Start Swiping</button>
-          </section>
+        <div >
+          <MultiCenterGradient>
+              <nav style={styles.nav}>
+              <a href="#" style={styles.navLink}>SWIPING</a>
+              <a href="#" style={styles.navLink}>ABOUT</a>
+              <a href="#" style={styles.navLink}>CONTACT</a>
+              <a href="#" style={styles.navLink}>CART</a>
+              <a href="#" style={styles.navLink}>LOG IN</a>
+            </nav>
+            <section style={styles.hero}>
+              <h1 style={{...styles.h1, fontStyle: 'italic', fontSize: '5rem'}}>s w i p e b o p</h1>
+              <p style={styles.subtitle}>
+                Effortless fashion at your fingertips<br />
+                — swipe, match, and style
+              </p>
+              <button style={styles.button}>Start Swiping</button>
+            </section>
+            </MultiCenterGradient>
         </div>
+        <div style={styles.mainContainer}>
         <section style={styles.section}>
           <h2 style={styles.h2}>A New Way to Shop Fashion</h2>
           <div style={styles.grid}>
@@ -199,6 +206,15 @@ const LandingPage = () => {
             quis nostrud exercitation ullamco laboris.
           </p>
         </section>
+      </div>
+
+      <div style={{ height: '400px', overflow: 'hidden' }}>
+        <MultiCenterGradient style = {{hight: '100%' , display: 'flex', alignItems: 'center'}}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
+            <button style={{ ...styles.button }}>Start Swiping</button>
+          </div>
+        </MultiCenterGradient>
       </div>
 
       <footer style={styles.footer}>
