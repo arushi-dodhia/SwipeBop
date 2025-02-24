@@ -25,8 +25,8 @@ SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS servic
 ---
 
 ## 🛠️ Tech Stack  
-- **Frontend**: React.js, Tailwind CSS, AWS Amplify  
-- **Backend**: Node.js, Python, AWS Lambda  
+- **Frontend**: React.js, Tailwind CSS
+- **Backend**: Python  
 - **Database**: AWS DynamoDB  
 - **APIs**: Shopbop API for fetching fashion products   
 
