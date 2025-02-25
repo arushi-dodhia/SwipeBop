@@ -30,7 +30,7 @@ const styles = {
     left: 0,
     width: "100%",
     height: "100%",
-    background: "url('/Users/arushidodhia/Desktop/CS620/SwipeBop/public/images/noise.png')",
+    background: "url('/images/noise.png')",
     opacity: 0.2,
     zIndex: 2, 
   },
@@ -208,8 +208,8 @@ const LandingPage = () => {
         </section>
       </div>
 
-      <div style={{ height: '400px', overflow: 'hidden' }}>
-        <MultiCenterGradient style = {{hight: '100%' , display: 'flex', alignItems: 'center'}}>
+      <div style={{ height: '250px', overflow: 'hidden'}}>
+        <MultiCenterGradient style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
             <button style={{ ...styles.button }}>Start Swiping</button>
