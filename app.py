@@ -2,6 +2,7 @@ import requests
 from flask import Flask, request, jsonify
 from cachetools import LFUCache
 import json
+import sys
 
 app = Flask(__name__)
 
@@ -21,15 +22,15 @@ sort_terms = ["editors-pick", "exclusives",  "hearts",  "price-high-low",  "pric
 # need other default parameters for sanitizing
 
 
-cache = LFUCache(maxsize=5)
+cache = LFUCache(maxsize=10)
 def fetch_from_shopbop(url, params):
     cache_key = f"{url}-{tuple(sorted(params.items()))}"
 
     if cache_key in cache:
-        print("DEBUG: cache hit!")
+        print("DEBUG: cache hit!", file=sys.stdout)
         return cache[cache_key]
     
-    print("DEBUG: cache miss, fetching from ShopBop API")
+    print("DEBUG: cache miss, fetching from ShopBop API", file=sys.stdout)
     try:
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
@@ -129,7 +130,7 @@ def browse_by_category():
     lang = request.args.get("lang", "en-US")
     category_id = request.args.get("id", "13198")
     colors = request.args.get("colors", "Black")
-    sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
+    sort = request.args.get("sort", "ratings") # default sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
     limit = request.args.get("limit", "10")
@@ -181,4 +182,4 @@ def get_outfits():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
