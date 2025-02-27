@@ -1,5 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import MultiCenterGradient from './gradient';
+import { useNavigate } from "react-router-dom";
+import Swiping from "./Swiping"
+import Login  from "./Login"
+import Contact from "./Contact"
+import About from "./About"
+import Cart from "./Cart"
 
 const styles = {
   container: {
@@ -136,16 +142,18 @@ const styles = {
 
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
   return (
     <div style={styles.container}>
         <div >
           <MultiCenterGradient>
               <nav style={styles.nav}>
-              <a href="#" style={styles.navLink}>SWIPING</a>
-              <a href="#" style={styles.navLink}>ABOUT</a>
-              <a href="#" style={styles.navLink}>CONTACT</a>
-              <a href="#" style={styles.navLink}>CART</a>
-              <a href="#" style={styles.navLink}>LOG IN</a>
+              <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
+              <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
+              <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
+              <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
+              <a href="#" style={styles.navLink} onClick={() => navigate("/account")}>LOGIN / REGISTER</a>
             </nav>
             <section style={styles.hero}>
               <h1 style={{...styles.h1, fontStyle: 'italic', fontSize: '5rem'}}>s w i p e b o p</h1>
