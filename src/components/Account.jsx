@@ -135,7 +135,7 @@ const styles = {
     },
 };
 
-const Login = () => {
+const Account = () => {
     const navigate = useNavigate()
 
     return (
@@ -165,4 +165,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Account;
