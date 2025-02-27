@@ -1,10 +1,12 @@
 import requests
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from cachetools import LFUCache
 import json
 import sys
 
 app = Flask(__name__)
+CORS(app)
 
 baseURL = "https://api.shopbop.com"
 baseIMGURL = "https://m.media-amazon.com/images/G/01/Shopbop/p"
@@ -32,13 +34,11 @@ def fetch_from_shopbop(url, params):
     
     print("DEBUG: cache miss, fetching from ShopBop API", file=sys.stdout)
     try:
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-
         cache[cache_key] = data
         return data
-
     except requests.exceptions.RequestException as e:
         print("Error:", e)
         return jsonify({"error": "Failed to fetch data from external API", "details": str(e)}), 500
