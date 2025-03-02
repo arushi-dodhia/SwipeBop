@@ -148,17 +148,6 @@ const Login = () => {
                         <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
                     </nav>
-                    <section style={styles.hero}>
-                        <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>Already have an account?</h1>
-                        <button style={styles.button} onClick={() => navigate("/login")}>Login</button>
-                        <p>
-                        <br />
-                        <br />
-                        <br />
-                        </p>
-                        <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>Need a new account?</h1>
-                        <button style={styles.button} onClick={() => navigate("/signup")}>Register</button>
-                    </section>
                 </MultiCenterGradient>
             </div>
         </div>

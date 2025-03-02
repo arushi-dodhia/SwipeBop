@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LandingPage from "./landingpage";
 import MultiCenterGradient from './gradient';
 
 const styles = {
@@ -143,6 +144,7 @@ const Account = () => {
             <div >
                 <MultiCenterGradient>
                     <nav style={styles.nav}>
+                        <a href="#" style={styles.navLink} onClick={() => navigate("/")}>HOME</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
@@ -152,14 +154,28 @@ const Account = () => {
                         <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>Already have an account?</h1>
                         <button style={styles.button} onClick={() => navigate("/login")}>Login</button>
                         <p>
-                        <br />
-                        <br />
-                        <br />
+                            <br />
+                            <br />
+                            <br />
                         </p>
                         <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>Need a new account?</h1>
                         <button style={styles.button} onClick={() => navigate("/signup")}>Register</button>
                     </section>
                 </MultiCenterGradient>
+            </div>
+            <div>
+                <footer style={styles.footer}>
+                    <div style={styles.mainContainer}>
+                        <div style={styles.footerLinks}>
+                            <a href="#" style={styles.footerLink}>Company</a>
+                            <a href="#" style={styles.footerLink}>Social Media</a>
+                            <a href="#" style={styles.footerLink}>Privacy</a>
+                            <a href="#" style={styles.footerLink}>Terms</a>
+                            <a href="#" style={styles.footerLink}>Contact</a>
+                            <a href="#" style={styles.footerLink}>Help</a>
+                        </div>
+                    </div>
+                </footer>
             </div>
         </div>
     );
