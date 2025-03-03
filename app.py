@@ -21,6 +21,7 @@ headers = {
 departments = ["WOMENS", "MENS"]
 languages = ["en-US", "ru-RU", "zh-CN"]
 sort_terms = ["editors-pick", "exclusives",  "hearts",  "price-high-low",  "price-low-high", "ratings"]
+
 # need other default parameters for sanitizing
 
 
@@ -180,6 +181,6 @@ def get_outfits():
     outfits = fetch_from_shopbop(url, params)
     return jsonify(outfits if outfits else {"error": "Failed to fetch data"})
 
-
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
+
