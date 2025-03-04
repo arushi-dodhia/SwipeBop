@@ -1,8 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import LandingPage from "./landingpage";
 import "./contact.css"
-import MultiCenterGradient from './gradient';
 import emailjs from '@emailjs/browser';
 
 
@@ -176,44 +174,44 @@ const Contact = () => {
                     <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/login?client_id=85q1ulv7t8ivq7g9p7ioivdqs&response_type=code&scope=email+openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGIN / REGISTER</a>
                     <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/logout?client_id=85q1ulv7t8ivq7g9p7ioivdqs&logout_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGOUT</a>
                 </nav>
-                <div class="new_home_web">
-                    <div class="responsive-container-block big-container">
-                        <div class="responsive-container-block textContainer">
-                            <div class="topHead">
-                                <p class="text-blk heading">
+                <div className="new_home_web">
+                    <div className="responsive-container-block big-container">
+                        <div className="responsive-container-block textContainer">
+                            <div className="topHead">
+                                <p className="text-blk heading">
                                     CONTACT-
-                                    <span class="orangeText">
+                                    <span className="orangeText">
                                         SWIPEBOP-TEAM
                                     </span>
                                 </p>
-                                <div class="orangeLine" id="w-c-s-bgc_p-2-dm-id">
+                                <div className="orangeLine" id="w-c-s-bgc_p-2-dm-id">
                                 </div>
                             </div>
                         </div>
-                        <div class="responsive-container-block container">
-                            <div class="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-7 wk-ipadp-10 line" id="i69b">
-                                <form class="form-box" ref={form} onSubmit={sendEmail}>
-                                    <div class="container-block form-wrapper">
-                                        <div class="responsive-container-block">
-                                            <div class="left4">
-                                                <div class="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6" id="i10mt-2">
-                                                    <input class="input" id="ijowk-2" name="first_name" placeholder="First Name" required/>
+                        <div className="responsive-container-block container">
+                            <div className="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-7 wk-ipadp-10 line" id="i69b">
+                                <form className="form-box" ref={form} onSubmit={sendEmail}>
+                                    <div className="container-block form-wrapper">
+                                        <div className="responsive-container-block">
+                                            <div className="left4">
+                                                <div className="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6" id="i10mt-2">
+                                                    <input className="input" id="ijowk-2" name="first_name" placeholder="First Name" required/>
                                                 </div>
-                                                <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
-                                                    <input class="input" id="indfi-2" name="last_name" placeholder="Last Name" required/>
+                                                <div className="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
+                                                    <input className="input" id="indfi-2" name="last_name" placeholder="Last Name" required/>
                                                 </div>
-                                                <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
-                                                    <input class="input" id="ipmgh-2" name="user_email" placeholder="Email Address" required/>
+                                                <div className="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
+                                                    <input className="input" id="ipmgh-2" name="user_email" placeholder="Email Address" required/>
                                                 </div>
-                                                <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12 lastPhone">
-                                                    <input class="input" id="imgis-2" name="phone_number" placeholder="Phone Number" required/>
+                                                <div className="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12 lastPhone">
+                                                    <input className="input" id="imgis-2" name="phone_number" placeholder="Phone Number" required/>
                                                 </div>
                                             </div>
-                                            <div class="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-12 wk-ipadp-12" id="i634i-2">
-                                                <textarea class="textinput" id="i5vyy-2" name="message" placeholder="Message" required></textarea>
+                                            <div className="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-12 wk-ipadp-12" id="i634i-2">
+                                                <textarea className="textinput" id="i5vyy-2" name="message" placeholder="Message" required></textarea>
                                             </div>
                                         </div>
-                                        <input type="submit" value="Submit" class='send' href="#" id="w-c-s-bgc_p-1-dm-id" />
+                                        <input type="submit" value="Submit" className='send' href="#" id="w-c-s-bgc_p-1-dm-id" />
                                     </div>
                                 </form>
                             </div>
