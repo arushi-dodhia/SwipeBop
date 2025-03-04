@@ -32,12 +32,18 @@ SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS servic
 
 ---
 
-## 📅 Roadmap  
+## AWS Architecture for SwipeBop
 
-🔹 **Phase 1:** Basic UI & swipe feature 
-🔹 **Phase 2:** AWS Lambda integration & API Gateway   
-🔹 **Phase 3:** Implement user authentication & database storage 
-🔹 **Phase 4:** Final testing & deployment   
+SwipeBop is built on a **serverless, cloud-native** infrastructure leveraging AWS services:
+
+### **🚀 AWS Services Used**
+| Service       | Purpose |
+|--------------|---------|
+| **EC2**      | Hosts backend services if not using Lambda. Useful for managing persistent API services. |
+| **DynamoDB** | NoSQL database for storing user interactions, liked items, and recommendations. |
+| **API Gateway** | Manages API requests between frontend and backend services. |
+| **Amplify**  | Hosting and deployment for frontend UI. |
+
 
 ---
 

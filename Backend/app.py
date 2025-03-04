@@ -1,9 +1,12 @@
 import requests
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from cachetools import LFUCache
 import json
+import sys
 
 app = Flask(__name__)
+CORS(app)
 
 baseURL = "https://api.shopbop.com"
 baseIMGURL = "https://m.media-amazon.com/images/G/01/Shopbop/p"
@@ -18,26 +21,25 @@ headers = {
 departments = ["WOMENS", "MENS"]
 languages = ["en-US", "ru-RU", "zh-CN"]
 sort_terms = ["editors-pick", "exclusives",  "hearts",  "price-high-low",  "price-low-high", "ratings"]
+
 # need other default parameters for sanitizing
 
 
-cache = LFUCache(maxsize=5)
+cache = LFUCache(maxsize=10)
 def fetch_from_shopbop(url, params):
     cache_key = f"{url}-{tuple(sorted(params.items()))}"
 
     if cache_key in cache:
-        print("DEBUG: cache hit!")
+        print("DEBUG: cache hit!", file=sys.stdout)
         return cache[cache_key]
     
-    print("DEBUG: cache miss, fetching from ShopBop API")
+    print("DEBUG: cache miss, fetching from ShopBop API", file=sys.stdout)
     try:
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-
         cache[cache_key] = data
         return data
-
     except requests.exceptions.RequestException as e:
         print("Error:", e)
         return jsonify({"error": "Failed to fetch data from external API", "details": str(e)}), 500
@@ -129,7 +131,7 @@ def browse_by_category():
     lang = request.args.get("lang", "en-US")
     category_id = request.args.get("id", "13198")
     colors = request.args.get("colors", "Black")
-    sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
+    sort = request.args.get("sort", "ratings") # default sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
     limit = request.args.get("limit", "10")
@@ -179,6 +181,6 @@ def get_outfits():
     outfits = fetch_from_shopbop(url, params)
     return jsonify(outfits if outfits else {"error": "Failed to fetch data"})
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
+
