@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LandingPage from "./landingpage";
+import "./contact.css"
 import MultiCenterGradient from './gradient';
 import emailjs from '@emailjs/browser';
+
 
 const styles = {
     container: {
@@ -10,13 +12,6 @@ const styles = {
         padding: 0,
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         lineHeight: 1.6,
-    },
-    container2: {
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
     },
     gradientContainer: {
         position: "relative",
@@ -142,104 +137,11 @@ const styles = {
         color: '#666',
         textDecoration: 'none',
     },
-    global: {
-        margin: 0,
-        padding: 0,
-        boxSizing: 'border-box'
-    },
-    htmlBody: {
-        height: '100vh',
-        background: '#666666',
-        fontFamily: "'Balsamiq Sans', sans-serif",
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    // Additional style inspiration - https://codepen.io/batuhanbas/pen/VwezONv
-    card: {
-        width: "90%",
-        maxWidth: "900px",
-        padding: "50px",
-        border: "6px solid rgba(0, 0, 0, 0.5)",
-        boxShadow: "20px 20px 0 rgba(0, 0, 0, 0.3)",
-        borderRadius: "50px",
-        background: "rgba(255, 255, 255, 0.2)",
-        backdropFilter: "blur(10px)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-    },
-    cardTitle: {
-        color: 'rgba(0, 0, 0, 0.3)',
-        fontSize: '60px',
-        textTransform: 'uppercase'
-    },
-    form: {
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px", // Keeps proper spacing between fields
-    },
-    formGroup: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        width: "100%",
-    },
-    label: {
-        fontSize: "28px",
-        color: "#ffffff",
-        marginBottom: "5px",
-    },
-    input: {
-        width: "100%",
-        height: "50px",
-        fontSize: "18px",
-        padding: "10px",
-        border: "3px solid rgba(0, 0, 0, 0.3)",
-        boxShadow: "5px 5px 0 rgba(0, 0, 0, 0.3)",
-        borderRadius: "25px",
-        background: "rgba(255, 255, 255, 0.3)",
-        color: "#000",
-        outline: "none",
-    },
-    msgTxtarea: {
-        width: "100%",
-        height: "150px", // Larger message box
-        fontSize: "18px",
-        padding: "10px",
-        border: "3px solid rgba(0, 0, 0, 0.3)",
-        boxShadow: "5px 5px 0 rgba(0, 0, 0, 0.3)",
-        borderRadius: "25px",
-        background: "rgba(255, 255, 255, 0.3)",
-        color: "#000",
-        outline: "none",
-        resize: "none",
-    },
-    submitButtonContainer: {
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        marginTop: "10px",
-    },
-    submitButton: {
-        width: "50%",
-        padding: "12px",
-        fontSize: "18px",
-        textTransform: "uppercase",
-        background: "#DB3B14",
-        color: "white",
-        border: "none",
-        borderRadius: "40px",
-        cursor: "pointer",
-        transition: "all 0.3s",
-    },
 };
 
 
 const Contact = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const form = useRef();
 
     // Reference code from email.JS website - https://www.emailjs.com/docs/examples/reactjs/
@@ -263,42 +165,61 @@ const Contact = () => {
     };
 
     return (
+        // Contact Us Design from = https://workik.com/contact-us-designs-with-html-css-and-javascript
         <div style={styles.container}>
             <div >
-                <MultiCenterGradient>
-                    <nav style={styles.nav}>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/")}>HOME</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
-                        <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/login?client_id=85q1ulv7t8ivq7g9p7ioivdqs&response_type=code&scope=email+openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGIN / REGISTER</a>
-                        <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/logout?client_id=85q1ulv7t8ivq7g9p7ioivdqs&logout_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGOUT</a>
-                    </nav>
-                    <div style={styles.container2}>
-                        <div style={styles.card}>
-                            <h2 style={styles.cardTitle}>Contact Us</h2>
-                            <form ref={form} style={styles.form} onSubmit={sendEmail}>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Name</label>
-                                    <input type="text" name="user_name" style={styles.input} required />
+                <nav style={styles.nav}>
+                    <a href="#" style={styles.navLink} onClick={() => navigate("/")}>HOME</a>
+                    <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
+                    <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
+                    <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
+                    <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/login?client_id=85q1ulv7t8ivq7g9p7ioivdqs&response_type=code&scope=email+openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGIN / REGISTER</a>
+                    <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/logout?client_id=85q1ulv7t8ivq7g9p7ioivdqs&logout_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGOUT</a>
+                </nav>
+                <div class="new_home_web">
+                    <div class="responsive-container-block big-container">
+                        <div class="responsive-container-block textContainer">
+                            <div class="topHead">
+                                <p class="text-blk heading">
+                                    CONTACT-
+                                    <span class="orangeText">
+                                        SWIPEBOP-TEAM
+                                    </span>
+                                </p>
+                                <div class="orangeLine" id="w-c-s-bgc_p-2-dm-id">
                                 </div>
-
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Email</label>
-                                    <input type="email" name="user_email" style={styles.input} required />
-                                </div>
-
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Message</label>
-                                    <textarea name="message" style={styles.msgTxtarea} required></textarea>
-                                </div>
-                                <div style={styles.submitButtonContainer}>
-                                    <input type="submit" value="Submit" style={styles.submitButton} />
-                                </div>
-                            </form>
+                            </div>
+                        </div>
+                        <div class="responsive-container-block container">
+                            <div class="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-7 wk-ipadp-10 line" id="i69b">
+                                <form class="form-box" ref={form} onSubmit={sendEmail}>
+                                    <div class="container-block form-wrapper">
+                                        <div class="responsive-container-block">
+                                            <div class="left4">
+                                                <div class="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6" id="i10mt-2">
+                                                    <input class="input" id="ijowk-2" name="first_name" placeholder="First Name" required/>
+                                                </div>
+                                                <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
+                                                    <input class="input" id="indfi-2" name="last_name" placeholder="Last Name" required/>
+                                                </div>
+                                                <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
+                                                    <input class="input" id="ipmgh-2" name="user_email" placeholder="Email Address" required/>
+                                                </div>
+                                                <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12 lastPhone">
+                                                    <input class="input" id="imgis-2" name="phone_number" placeholder="Phone Number" required/>
+                                                </div>
+                                            </div>
+                                            <div class="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-12 wk-ipadp-12" id="i634i-2">
+                                                <textarea class="textinput" id="i5vyy-2" name="message" placeholder="Message" required></textarea>
+                                            </div>
+                                        </div>
+                                        <input type="submit" value="Submit" class='send' href="#" id="w-c-s-bgc_p-1-dm-id" />
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </MultiCenterGradient>
+                </div>
             </div>
             <footer style={styles.footer}>
                 <div style={styles.mainContainer}>
