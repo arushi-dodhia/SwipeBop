@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./contact.css"
+import "../contact.css"
 import emailjs from '@emailjs/browser';
 
 
