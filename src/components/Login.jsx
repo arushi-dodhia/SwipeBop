@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from './gradient';
+import InputField from "./Input";
+import "../login.css"
 
 const styles = {
     container: {
@@ -8,22 +10,6 @@ const styles = {
         padding: 0,
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         lineHeight: 1.6,
-    },
-    gradientContainer: {
-        position: "relative",
-        background: `
-        linear-gradient(135deg, 
-          rgba(255, 170, 150, 1) 0%, 
-          rgba(220, 170, 200, 1) 40%, 
-          rgba(170, 180, 220, 1) 70%,
-          rgba(150, 180, 210, 1) 100%)
-      `,
-        backgroundColor: "transparent",
-        backgroundSize: "200% 200%",
-        backgroundPosition: "center",
-        height: "100vh",
-        overflow: "hidden",
-
     },
     noiseOverlay: {
         position: "relative",
@@ -136,20 +122,53 @@ const styles = {
 };
 
 const Login = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const form = useRef();
 
     return (
         <div style={styles.container}>
-            <div >
+            <div style={styles.gradientContainer}>
                 <MultiCenterGradient>
                     <nav style={styles.nav}>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
+                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
+                        <a href="#" style={styles.navLink} onClick={() => navigate("/logout")}>LOGOUT</a>
                     </nav>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '90vh',  // Ensures it takes the full gradient height
+                    }}>
+                        <div className="login-container">
+                            <h2 className="form-title">Log in</h2>
+                            <form action="#" className="login-form">
+                                <InputField type="email" placeholder="Email / Username" icon="mail"/>
+                                <InputField type="password" placeholder="Password" icon="lock"/>
+                                <a href="#" className="forgot-password-link">Forgot password?</a>
+                                <button type="submit" className="login-button">Log In</button>
+                            </form>
+                            <p className="signup-prompt">
+                                Don&apos;t have an account? <a href="#" className="signup-link" onClick={() => navigate("/signup")}>Sign up</a>
+                            </p>
+                        </div>
+                    </div>
                 </MultiCenterGradient>
             </div>
+            <footer style={styles.footer}>
+                <div style={styles.mainContainer}>
+                    <div style={styles.footerLinks}>
+                        <a href="#" style={styles.footerLink}>Company</a>
+                        <a href="#" style={styles.footerLink}>Social Media</a>
+                        <a href="#" style={styles.footerLink}>Privacy</a>
+                        <a href="#" style={styles.footerLink}>Terms</a>
+                        <a href="#" style={styles.footerLink}>Contact</a>
+                        <a href="#" style={styles.footerLink}>Help</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };

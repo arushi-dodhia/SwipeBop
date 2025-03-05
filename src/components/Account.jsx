@@ -148,7 +148,7 @@ const Account = () => {
                         <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
                         <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
+                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
                     </nav>
                     <section style={styles.hero}>
                         <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>Already have an account?</h1>

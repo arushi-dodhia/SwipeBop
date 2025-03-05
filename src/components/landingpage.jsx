@@ -1,11 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import MultiCenterGradient from './gradient';
 import { useNavigate } from "react-router-dom";
-import Swiping from "./Swiping"
-import Login from "./Login"
-import Contact from "./Contact"
-import About from "./About"
-import Cart from "./Cart"
 import { getCurrentUser, signOut, signInWithRedirect, fetchAuthSession } from "@aws-amplify/auth";
 
 const styles = {
@@ -153,9 +148,10 @@ const LandingPage = () => {
             <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
             <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
             <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CART</a>
-            <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/login?client_id=85q1ulv7t8ivq7g9p7ioivdqs&response_type=code&scope=email+openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGIN / REGISTER</a>
-            <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/logout?client_id=85q1ulv7t8ivq7g9p7ioivdqs&logout_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGOUT</a>
+            <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
+            {/* <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/login?client_id=85q1ulv7t8ivq7g9p7ioivdqs&response_type=code&scope=email+openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGIN / REGISTER</a>  */}
+            {/* <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/logout?client_id=85q1ulv7t8ivq7g9p7ioivdqs&logout_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGOUT</a> */}
+            <a href="#" style={styles.navLink} onClick={() => navigate("/login")}>LOGIN</a>
           </nav>
           <section style={styles.hero}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '5rem' }}>s w i p e b o p</h1>
