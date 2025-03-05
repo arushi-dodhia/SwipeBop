@@ -181,6 +181,20 @@ def get_outfits():
     outfits = fetch_from_shopbop(url, params)
     return jsonify(outfits if outfits else {"error": "Failed to fetch data"})
 
+@app.route("/swipebop/images", methods=["GET"])
+def get_images():
+    products = search_products()
+    color_idx = request.args.get("colorIdx", "1521306412")
+    img_urls = {}
+
+    for product in products['products']:
+        product_sin = product['product']['productSin']
+        img_src = product['product']['colors'][int(color_idx)]['images'][0]['src']
+        img_urls[product_sin] = f"{baseIMGURL}/{img_src}"
+
+    return jsonify(img_urls)
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
 
