@@ -5,9 +5,8 @@ import Swiping from "./components/Swiping"
 import Login  from "./components/Login"
 import Contact from "./components/Contact"
 import About from "./components/About"
-import Cart from "./components/Cart"
+import Closet from "./components/Closet"
 import Signup from "./components/Signup"
-import Account from "./components/Account"
 import Logout from "./components/Logout"
 import { Amplify } from "aws-amplify";
 import awsConfig from "./aws-exports";
@@ -20,12 +19,11 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/swipe" element={<Swiping />} />
-      <Route path="/outfits" element={<Cart />} />
+      <Route path="/outfits" element={<Closet />} />
       <Route path="/contact-us" element={<Contact />} />
       <Route path="/about-us" element={<About />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/account" element={<Account />} />
       <Route path="/logout" element={<Logout />} />
     </Routes>
   </Router>
