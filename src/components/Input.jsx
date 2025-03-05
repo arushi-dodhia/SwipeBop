@@ -1,6 +1,6 @@
 /* Code from - https://www.codingnepalweb.com/create-login-form-reactjs-css */
 import { useState } from "react";
-const InputField = ({ type, placeholder, icon }) => {
+const InputField = ({ type, placeholder, icon, name, value}) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   return (
     <div className="input-wrapper">
@@ -9,6 +9,8 @@ const InputField = ({ type, placeholder, icon }) => {
         placeholder={placeholder}
         className="input-field"
         required
+        name={name}
+        value={value}
       />
       <i className="material-symbols-rounded">{icon}</i>
       {type === 'password' && (

@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from './gradient';
 import InputField from "./Input";
+import { signIn, fetchAuthSession } from "@aws-amplify/auth";
 import "../login.css"
 
 const styles = {
@@ -123,7 +124,21 @@ const styles = {
 
 const Login = () => {
     const navigate = useNavigate();
-    const form = useRef();
+    const [error, setError] = useState("");
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget
+        const user = form.elements.email.value;
+        const pwd = form.elements.password.value;
+        try {
+            await signIn({username: user, password: pwd});
+            navigate("/"); // Redirect on success
+        } catch (err) {
+            setError("Invalid credentials. Please try again.");
+            console.error("Login error:", err);
+        }
+    };
 
     return (
         <div style={styles.container}>
@@ -144,9 +159,9 @@ const Login = () => {
                     }}>
                         <div className="login-container">
                             <h2 className="form-title">Log in</h2>
-                            <form action="#" className="login-form">
-                                <InputField type="email" placeholder="Email / Username" icon="mail"/>
-                                <InputField type="password" placeholder="Password" icon="lock"/>
+                            <form action="#" className="login-form" onSubmit={handleLogin}>
+                                <InputField type="text" name="email" placeholder="Email / Username" icon="mail" />
+                                <InputField type="password" name="password" placeholder="Password" icon="lock" />
                                 <a href="#" className="forgot-password-link">Forgot password?</a>
                                 <button type="submit" className="login-button">Log In</button>
                             </form>
