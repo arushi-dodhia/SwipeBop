@@ -1,8 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from './gradient';
 import InputField from "./Input";
-import { signIn, fetchAuthSession } from "@aws-amplify/auth";
+import { signIn } from "@aws-amplify/auth";
+import Navbar from "./Navbar";
 import "../login.css"
 
 const styles = {
@@ -132,10 +133,11 @@ const Login = () => {
         const user = form.elements.email.value;
         const pwd = form.elements.password.value;
         try {
-            await signIn({username: user, password: pwd});
+            await signIn({ username: user, password: pwd });
+            setError(""); // Clear any previous errors
             navigate("/"); // Redirect on success
         } catch (err) {
-            setError("Invalid credentials. Please try again.");
+            setError(err.message);
             console.error("Login error:", err);
         }
     };
@@ -144,13 +146,7 @@ const Login = () => {
         <div style={styles.container}>
             <div style={styles.gradientContainer}>
                 <MultiCenterGradient>
-                    <nav style={styles.nav}>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/logout")}>LOGOUT</a>
-                    </nav>
+                    <Navbar />
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -159,6 +155,7 @@ const Login = () => {
                     }}>
                         <div className="login-container">
                             <h2 className="form-title">Log in</h2>
+                            {error && <p className="error-message">{error}</p>} {/* Display error */}
                             <form action="#" className="login-form" onSubmit={handleLogin}>
                                 <InputField type="text" name="email" placeholder="Email / Username" icon="mail" />
                                 <InputField type="password" name="password" placeholder="Password" icon="lock" />
