@@ -184,7 +184,7 @@ def get_outfits():
 @app.route("/swipebop/images", methods=["GET"])
 def get_images():
     products = search_products()
-    color_idx = request.args.get("colorIdx", "1521306412")
+    color_idx = request.args.get("colorIdx", "0")
     img_urls = {}
 
     for product in products['products']:
