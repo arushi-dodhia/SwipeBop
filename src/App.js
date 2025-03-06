@@ -7,7 +7,6 @@ import Contact from "./components/Contact"
 import About from "./components/About"
 import Closet from "./components/Closet"
 import Signup from "./components/Signup"
-import Logout from "./components/Logout"
 import { Amplify } from "aws-amplify";
 import awsConfig from "./aws-exports";
 
@@ -24,7 +23,6 @@ function App() {
       <Route path="/about-us" element={<About />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/logout" element={<Logout />} />
     </Routes>
   </Router>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../contact.css"
+import "../contact.css";
+import Navbar from "./Navbar";
 import emailjs from '@emailjs/browser';
 
 
@@ -166,14 +167,7 @@ const Contact = () => {
         // Contact Us Design from = https://workik.com/contact-us-designs-with-html-css-and-javascript
         <div style={styles.container}>
             <div >
-                <nav style={styles.nav}>
-                    <a href="#" style={styles.navLink} onClick={() => navigate("/")}>HOME</a>
-                    <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
-                    <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
-                    <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
-                    {/* <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/login?client_id=85q1ulv7t8ivq7g9p7ioivdqs&response_type=code&scope=email+openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGIN / REGISTER</a> */}   
-                    {/* <a href="https://us-east-28cr6iby3m.auth.us-east-2.amazoncognito.com/logout?client_id=85q1ulv7t8ivq7g9p7ioivdqs&logout_uri=http%3A%2F%2Flocalhost%3A3000%2F" style={styles.navLink}>LOGOUT</a> */}
-                </nav>
+                <Navbar />
                 <div className="new_home_web">
                     <div className="responsive-container-block big-container">
                         <div className="responsive-container-block textContainer">
@@ -195,16 +189,16 @@ const Contact = () => {
                                         <div className="responsive-container-block">
                                             <div className="left4">
                                                 <div className="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6" id="i10mt-2">
-                                                    <input className="input" id="ijowk-2" name="first_name" placeholder="First Name" required/>
+                                                    <input className="input" id="ijowk-2" name="first_name" placeholder="First Name" required />
                                                 </div>
                                                 <div className="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
-                                                    <input className="input" id="indfi-2" name="last_name" placeholder="Last Name" required/>
+                                                    <input className="input" id="indfi-2" name="last_name" placeholder="Last Name" required />
                                                 </div>
                                                 <div className="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
-                                                    <input className="input" id="ipmgh-2" name="user_email" placeholder="Email Address" required/>
+                                                    <input className="input" id="ipmgh-2" name="user_email" placeholder="Email Address" required />
                                                 </div>
                                                 <div className="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12 lastPhone">
-                                                    <input className="input" id="imgis-2" name="phone_number" placeholder="Phone Number" required/>
+                                                    <input className="input" id="imgis-2" name="phone_number" placeholder="Phone Number" required />
                                                 </div>
                                             </div>
                                             <div className="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-12 wk-ipadp-12" id="i634i-2">

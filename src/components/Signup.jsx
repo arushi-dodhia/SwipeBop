@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from './gradient';
 import InputField from "./Input";
+import { signUp } from "@aws-amplify/auth";
+import Navbar from "./Navbar";
 import "../login.css"
 
 const styles = {
@@ -123,19 +125,43 @@ const styles = {
 
 const Signup = () => {
     const navigate = useNavigate();
-    const form = useRef();
+    const [error, setError] = useState("");
+
+    const handleSignUp = (e) => {
+        e.preventDefault();
+        const form = e.currentTarget
+        const user = form.elements.user.value;
+        const pwd = form.elements.password.value;
+        const confirmPwd = form.elements.confirm.value;
+        const email = form.elements.email.value;
+
+        if (pwd !== confirmPwd) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        try {
+            signUp({
+                username: user,
+                password: pwd,
+                options: {
+                    userAttributes: {
+                        email: email,
+                    }
+                }
+            });
+            setError(""); // Clear any previous errors
+            navigate("/login");
+        } catch (err) {
+            setError(err.message);
+        }
+    }
 
     return (
         <div style={styles.container}>
             <div style={styles.gradientContainer}>
                 <MultiCenterGradient>
-                    <nav style={styles.nav}>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPING</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
-                        <a href="#" style={styles.navLink} onClick={() => navigate("/logout")}>LOGOUT</a>
-                    </nav>
+                <Navbar />
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -144,12 +170,18 @@ const Signup = () => {
                     }}>
                         <div className="login-container">
                             <h2 className="form-title">Register Account</h2>
-                            <form action="#" className="login-form">
-                                <InputField type="email" placeholder="Email / Username" icon="mail"/>
-                                <InputField type="password" placeholder="Password" icon="lock"/>
-                                <InputField type="password" placeholder="Confirm Password" icon="lock"/>
+                            {error && <p className="error-message">{error}</p>} {/* Display error */}
+                            <form action="#" className="login-form" onSubmit={handleSignUp}>
+                                <InputField type="text" name="user" placeholder="Username" icon="person" />
+                                <InputField type="email" name="email" placeholder="Email" icon="mail" />
+                                <InputField type="password" name="password" placeholder="Password" icon="lock" />
+                                <InputField type="password" name="confirm" placeholder="Confirm Password" icon="lock" />
                                 <button type="submit" className="login-button">Sign Up</button>
                             </form>
+
+                            <p className="signup-prompt">
+                                Already have an account? <a href="#" className="signup-link" onClick={() => navigate("/login")}>Login</a>
+                            </p>
                         </div>
                     </div>
                 </MultiCenterGradient>
