@@ -183,16 +183,52 @@ def get_outfits():
 
 @app.route("/swipebop/images", methods=["GET"])
 def get_images():
-    products = search_products()
-    color_idx = request.args.get("colorIdx", "0")
+    color_idx = int(request.args.get("colorIdx", "0"))
+    allowOutOfStockItems = request.args.get("allowOutOfStockItems", "false").lower()
+    q = request.args.get("q", "shirts")
+    sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
+    minPrice = request.args.get("minPrice", "0")
+    maxPrice = request.args.get("maxPrice", "1000000")
+    limit = request.args.get("limit", "10")
+    dept = request.args.get("dept", "WOMENS")
+    lang = request.args.get("lang", "en-US")
+    offset = request.args.get("offset", "0")
+
+    url = baseURL + "/public/search"
+    params = {
+        "allowOutOfStockItems": allowOutOfStockItems,
+        "q": q,
+        "sort": sort,
+        "minPrice": minPrice,
+        "maxPrice": maxPrice,
+        "limit": limit,
+        "dept": dept,
+        "lang": lang,
+        "offset": offset
+    }
+
+    sanitize_data_response = sanitize_data(params)
+    if sanitize_data_response:
+        return sanitize_data_response
+    
+    response = fetch_from_shopbop(url, params)
+    if not isinstance(response, dict):
+        return jsonify({"error": "Failed to retrieve products "}), 500
+    
     img_urls = {}
+    products = response.get("products", [])
+    if not products:
+        return jsonify({"error": "No products found"}), 404
 
-    for product in products['products']:
-        product_sin = product['product']['productSin']
-        img_src = product['product']['colors'][int(color_idx)]['images'][0]['src']
-        img_urls[product_sin] = f"{baseIMGURL}/{img_src}"
+    for product in products:
+        try:
+            product_sin = product['product']['productSin']
+            img_src = product['product']['colors'][color_idx]['images'][0]['src']
+            img_urls[product_sin] = f"{baseIMGURL}/{img_src}"
+        except (KeyError, IndexError):
+            continue
 
-    return jsonify(img_urls)
+    return jsonify(img_urls if img_urls else {"error": "Failed to fetch image URLs"})
 
 
 if __name__ == "__main__":
