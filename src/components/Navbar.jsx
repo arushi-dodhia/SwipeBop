@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, signOut } from "@aws-amplify/auth";
-import MultiCenterGradient from "./gradient";
 
 const styles = {
     container: {
