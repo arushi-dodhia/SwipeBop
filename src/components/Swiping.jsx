@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 
-const ProductSwiper = () => {
+const Swiping = () => {
   const [products, setProducts] = useState({
     accessories: [],
     pants: [],
@@ -312,4 +312,4 @@ const ProductSwiper = () => {
     }
   }
     
-export default ProductSwiper;
+export default Swiping;
