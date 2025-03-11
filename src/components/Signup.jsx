@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from './gradient';
 import InputField from "./Input";
-import { signIn } from "@aws-amplify/auth";
+import { signUp } from "@aws-amplify/auth";
 import Navbar from "./Navbar";
 import "../login.css"
 
@@ -123,30 +123,45 @@ const styles = {
     },
 };
 
-const Login = () => {
+const Signup = () => {
     const navigate = useNavigate();
     const [error, setError] = useState("");
 
-    const handleLogin = async (e) => {
+    const handleSignUp = (e) => {
         e.preventDefault();
         const form = e.currentTarget
-        const user = form.elements.email.value;
+        const user = form.elements.user.value;
         const pwd = form.elements.password.value;
+        const confirmPwd = form.elements.confirm.value;
+        const email = form.elements.email.value;
+
+        if (pwd !== confirmPwd) {
+            setError("Passwords do not match");
+            return;
+        }
+
         try {
-            await signIn({ username: user, password: pwd });
+            signUp({
+                username: user,
+                password: pwd,
+                options: {
+                    userAttributes: {
+                        email: email,
+                    }
+                }
+            });
             setError(""); // Clear any previous errors
-            navigate("/"); // Redirect on success
+            navigate("/login");
         } catch (err) {
             setError(err.message);
-            console.error("Login error:", err);
         }
-    };
+    }
 
     return (
         <div style={styles.container}>
             <div style={styles.gradientContainer}>
                 <MultiCenterGradient>
-                    <Navbar />
+                <Navbar />
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -154,16 +169,18 @@ const Login = () => {
                         height: '90vh',  // Ensures it takes the full gradient height
                     }}>
                         <div className="login-container">
-                            <h2 className="form-title">Log in</h2>
+                            <h2 className="form-title">Register Account</h2>
                             {error && <p className="error-message">{error}</p>} {/* Display error */}
-                            <form action="#" className="login-form" onSubmit={handleLogin}>
-                                <InputField type="text" name="email" placeholder="Email / Username" icon="mail" />
+                            <form action="#" className="login-form" onSubmit={handleSignUp}>
+                                <InputField type="text" name="user" placeholder="Username" icon="person" />
+                                <InputField type="email" name="email" placeholder="Email" icon="mail" />
                                 <InputField type="password" name="password" placeholder="Password" icon="lock" />
-                                <a href="#" className="forgot-password-link">Forgot password?</a>
-                                <button type="submit" className="login-button">Log In</button>
+                                <InputField type="password" name="confirm" placeholder="Confirm Password" icon="lock" />
+                                <button type="submit" className="login-button">Sign Up</button>
                             </form>
+
                             <p className="signup-prompt">
-                                Don&apos;t have an account? <a href="#" className="signup-link" onClick={() => navigate("/signup")}>Sign up</a>
+                                Already have an account? <a href="#" className="signup-link" onClick={() => navigate("/login")}>Login</a>
                             </p>
                         </div>
                     </div>
@@ -185,4 +202,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Signup;

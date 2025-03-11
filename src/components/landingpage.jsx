@@ -1,5 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import MultiCenterGradient from './gradient';
+import { useNavigate } from "react-router-dom";
+import Navbar from './Navbar';
+import { getCurrentUser, signOut } from "@aws-amplify/auth";
 
 const styles = {
   container: {
@@ -17,7 +20,7 @@ const styles = {
         rgba(170, 180, 220, 1) 70%,
         rgba(150, 180, 210, 1) 100%)
     `,
-    backgroundColor: "transparent", 
+    backgroundColor: "transparent",
     backgroundSize: "200% 200%",
     backgroundPosition: "center",
     height: "100vh",
@@ -32,7 +35,7 @@ const styles = {
     height: "100%",
     background: "url('/images/noise.png')",
     opacity: 0.2,
-    zIndex: 2, 
+    zIndex: 2,
   },
   nav: {
     display: 'flex',
@@ -134,30 +137,49 @@ const styles = {
   },
 };
 
-
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const checkUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const handleLogout= async () => {
+    try {
+      await signOut();
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   return (
     <div style={styles.container}>
-        <div >
-          <MultiCenterGradient>
-              <nav style={styles.nav}>
-              <a href="#" style={styles.navLink}>SWIPING</a>
-              <a href="#" style={styles.navLink}>ABOUT</a>
-              <a href="#" style={styles.navLink}>CONTACT</a>
-              <a href="#" style={styles.navLink}>CART</a>
-              <a href="#" style={styles.navLink}>LOG IN</a>
-            </nav>
-            <section style={styles.hero}>
-              <h1 style={{...styles.h1, fontStyle: 'italic', fontSize: '5rem'}}>s w i p e b o p</h1>
-              <p style={styles.subtitle}>
-                Effortless fashion at your fingertips<br />
-                — swipe, match, and style
-              </p>
-              <button style={styles.button}>Start Swiping</button>
-            </section>
-            </MultiCenterGradient>
-        </div>
-        <div style={styles.mainContainer}>
+      <div >
+        <MultiCenterGradient>
+        <Navbar />
+          <section style={styles.hero}>
+            <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '5rem' }}>s w i p e b o p</h1>
+            <p style={styles.subtitle}>
+              Effortless fashion at your fingertips<br />
+              — swipe, match, and style
+            </p>
+            <button style={styles.button}>Start Swiping</button>
+          </section>
+        </MultiCenterGradient>
+      </div>
+      <div style={styles.mainContainer}>
         <section style={styles.section}>
           <h2 style={styles.h2}>A New Way to Shop Fashion</h2>
           <div style={styles.grid}>
@@ -183,12 +205,12 @@ const LandingPage = () => {
             <div style={styles.statsBox}>
               <div style={styles.statsTitle}>
                 <div style={styles.statsIcon}>S</div>
-                <h3 style={{...styles.h3}}>1000+ Brands</h3>
+                <h3 style={{ ...styles.h3 }}>1000+ Brands</h3>
               </div>
               <p>We carefully vet each brand to ensure consistent style and design sensibility.</p>
             </div>
             <div style={styles.statsBox}>
-              <h3 style={{...styles.h3}}>2M+ Users</h3>
+              <h3 style={{ ...styles.h3 }}>2M+ Users</h3>
               <p>Our dedicated user base enables us to deliver more accurate recommendations, which gets better each time you use it.</p>
             </div>
             <div>
@@ -208,7 +230,7 @@ const LandingPage = () => {
         </section>
       </div>
 
-      <div style={{ height: '250px', overflow: 'hidden'}}>
+      <div style={{ height: '250px', overflow: 'hidden' }}>
         <MultiCenterGradient style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
