@@ -175,7 +175,7 @@ const LandingPage = () => {
               Effortless fashion at your fingertips<br />
               — swipe, match, and style
             </p>
-            <button style={styles.button}>Start Swiping</button>
+            <button style={styles.button} onClick={() => navigate('/swipe')}>Start Swiping</button>
           </section>
         </MultiCenterGradient>
       </div>
@@ -234,7 +234,7 @@ const LandingPage = () => {
         <MultiCenterGradient style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
-            <button style={{ ...styles.button }}>Start Swiping</button>
+            <button style={{ ...styles.button }} onClick={() => navigate('/swipe')}>Start Swiping</button>
           </div>
         </MultiCenterGradient>
       </div>
@@ -246,7 +246,7 @@ const LandingPage = () => {
             <a href="#" style={styles.footerLink}>Social Media</a>
             <a href="#" style={styles.footerLink}>Privacy</a>
             <a href="#" style={styles.footerLink}>Terms</a>
-            <a href="#" style={styles.footerLink}>Contact</a>
+            <a href="/contact-us" style={styles.footerLink}>Contact</a>
             <a href="#" style={styles.footerLink}>Help</a>
           </div>
         </div>
