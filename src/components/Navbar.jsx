@@ -156,7 +156,7 @@ const Navbar = () => {
             <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPE</a>
             <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
             <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/outfits")}>CLOSET</a>
+            <a href="#" style={styles.navLink} onClick={() => navigate("/closet")}>CLOSET</a>
             {isLoggedIn ?
                 <a href="#" style={styles.navLink} onClick={() => handleLogout()}>LOGOUT</a> :
                 <>

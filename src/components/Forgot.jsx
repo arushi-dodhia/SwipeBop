@@ -5,6 +5,7 @@ import InputField from "./Input";
 import { confirmResetPassword, resetPassword } from "@aws-amplify/auth";
 import Navbar from "./Navbar";
 import "../login.css"
+import Footer from "./Footer";
 
 const styles = {
     container: {
@@ -194,18 +195,7 @@ const Forgot = () => {
                     </div>
                 </MultiCenterGradient>
             </div>
-            <footer style={styles.footer}>
-                <div style={styles.mainContainer}>
-                    <div style={styles.footerLinks}>
-                        <a href="#" style={styles.footerLink}>Company</a>
-                        <a href="#" style={styles.footerLink}>Social Media</a>
-                        <a href="#" style={styles.footerLink}>Privacy</a>
-                        <a href="#" style={styles.footerLink}>Terms</a>
-                        <a href="#" style={styles.footerLink}>Contact</a>
-                        <a href="#" style={styles.footerLink}>Help</a>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };

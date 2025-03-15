@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../contact.css";
 import Navbar from "./Navbar";
 import emailjs from '@emailjs/browser';
+import Footer from "./Footer";
 
 
 const styles = {
@@ -213,18 +214,7 @@ const Contact = () => {
                     </div>
                 </div>
             </div>
-            <footer style={styles.footer}>
-                <div style={styles.mainContainer}>
-                    <div style={styles.footerLinks}>
-                        <a href="#" style={styles.footerLink}>Company</a>
-                        <a href="#" style={styles.footerLink}>Social Media</a>
-                        <a href="#" style={styles.footerLink}>Privacy</a>
-                        <a href="#" style={styles.footerLink}>Terms</a>
-                        <a href="#" style={styles.footerLink}>Contact</a>
-                        <a href="#" style={styles.footerLink}>Help</a>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };
