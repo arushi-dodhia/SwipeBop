@@ -3,6 +3,7 @@ import MultiCenterGradient from './gradient';
 import { useNavigate } from "react-router-dom";
 import Navbar from './Navbar';
 import { getCurrentUser, signOut } from "@aws-amplify/auth";
+import Footer from './Footer';
 
 const styles = {
   container: {
@@ -239,18 +240,7 @@ const LandingPage = () => {
         </MultiCenterGradient>
       </div>
 
-      <footer style={styles.footer}>
-        <div style={styles.mainContainer}>
-          <div style={styles.footerLinks}>
-            <a href="#" style={styles.footerLink}>Company</a>
-            <a href="#" style={styles.footerLink}>Social Media</a>
-            <a href="#" style={styles.footerLink}>Privacy</a>
-            <a href="#" style={styles.footerLink}>Terms</a>
-            <a href="/contact-us" style={styles.footerLink}>Contact</a>
-            <a href="#" style={styles.footerLink}>Help</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
