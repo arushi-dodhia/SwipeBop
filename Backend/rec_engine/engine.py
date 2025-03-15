@@ -1,56 +1,64 @@
-import requests
 import json
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.decomposition import PCA
+from sklearn.neighbors import NearestNeighbors
 
-baseURL = "https://api.shopbop.com"
-headers = {
-    "accept": "application/json",
-    "Client-Id": "Shopbop-UW-Team2-2024",
-    "Client-Version": "1.0.0"
-}
+with open("training_data.json", "r") as f:
+    data = json.load(f)
 
-def fetch_items(query, color, limit=100):
-    url = f"{baseURL}/public/search"
-    params = {
-        "lang": "en-US",
-        "dept": "WOMENS",
-        "q": "jacket",
-        "colors": color,
-        "limit": limit,
-        "sort": "ratings"
-    }
+colors = []
+for item in data:
+    color_name = item.get("colors", {}).get("name", "unknown")
+    colors.append(color_name.lower())
 
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data for {color}: {e}")
-        return None
-    
-def main():
-    query = "jacket"
-    colors = ["Black", "White", "Red"]
-    combined_products = []
+print("Extracted colors for first 10 items:", colors[:10])
 
-    for color in colors:
-        print(f"Fetching {color} items...")
-        data = fetch_items(query, color, limit=100)
-        if data and "products" in data:
-            products = data["products"]
-            for product in products:
-                if "colors" not in product or not product["colors"]:
-                    product["colors"] = {"name": color}
-                else:
-                    if "name" not in product["colors"]:
-                        product["colors"]["name"] = color
-                combined_products.append(product)
-        else:
-            print(f"No data returned for {color}")
-    print(f"Total products fetched: {len(combined_products)}")
+le = LabelEncoder()
+color_int = le.fit_transform(colors).reshape(-1, 1)
+ohe = OneHotEncoder(sparse=False)
+features = ohe.fit_transform(color_int)
 
-    with open("training_data.json", "w") as f:
-        json.dump(combined_products, f, indent = 2)
-    print("Data saved to training_data")
+print("Feature matrix shape:", features.shape)
 
-if __name__ == "__main__":
-    main()
+knn = NearestNeighbors(n_neighbors=5, metric="euclidean")
+knn.fit(features)
+
+pca = PCA(n_components=2)
+features_2d = pca.fit_transform(features)
+
+np.random.seed(42)
+initial_index = np.random.choice(range(features.shape[0]))
+user_pref = features[initial_index].astype(float)
+
+trajectory = [] 
+recommended_indices = []  
+
+alpha = 0.3
+num_iterations = 10
+
+for i in range(num_iterations):
+    distances, indices = knn.kneighbors([user_pref])
+    rec_index = indices[0][0]
+    recommended_indices.append(rec_index)
+    user_pref_2d = pca.transform(user_pref.reshape(1, -1))[0]
+    trajectory.append(user_pref_2d)
+    rec_feature = features[rec_index]
+    user_pref = (1 - alpha) * user_pref + alpha * rec_feature
+
+trajectory = np.array(trajectory)
+plt.figure(figsize=(8, 6))
+plt.scatter(features_2d[:, 0], features_2d[:, 1], c='gray', alpha=0.6, label="Products")
+plt.plot(trajectory[:, 0], trajectory[:, 1], '-o', color='red', label="User Preference Trajectory")
+
+for rec_idx in recommended_indices:
+    rec_point = pca.transform(features[rec_idx].reshape(1, -1))[0]
+    plt.scatter(rec_point[0], rec_point[1], marker='x', s=100, color='blue', label="Recommended" if rec_idx == recommended_indices[0] else "")
+
+plt.title("KNN Recommendation: User Preference Trajectory")
+plt.xlabel("PCA Component 1")
+plt.ylabel("PCA Component 2")
+plt.legend()
+plt.grid(True)
+plt.show()
