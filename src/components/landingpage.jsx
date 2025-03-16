@@ -137,10 +137,15 @@ const styles = {
     textDecoration: 'none',
   },
 };
-
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [productImage, setProductImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fallback image in case API fails
+  const fallbackImage = "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop";
 
   const checkUser = async () => {
     try {
@@ -155,7 +160,67 @@ const LandingPage = () => {
 
   useEffect(() => {
     checkUser();
+    fetchFashionImage();
   }, []);
+
+  const [productImages, setProductImages] = useState([]);
+  const [image1, setImage1] = useState(null);
+  const [image2, setImage2] = useState(null);
+
+  const fetchFashionImage = async () => {
+    setIsLoading(true);
+    try {
+      const category = 'dresses';
+      const queryParams = new URLSearchParams({
+        lang: 'en-US',
+        currency: 'USD',
+        q: category,
+        limit: 10,  // Fetch multiple images
+        minPrice: 25,
+        maxPrice: 500,
+        siteId: 1006,
+        allowOutOfStockItems: 'false',
+        dept: 'WOMENS',
+      });
+  
+      const response = await fetch(`http://3.142.196.127:5000/swipebop/images?${queryParams}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Client-Id': 'Shopbop-UW-Team2-2024',
+          'Client-Version': '1.0.0',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch fashion images`);
+      }
+  
+      const data = await response.json();
+      console.log("API response data:", data);
+  
+      // Extract image URLs from the object
+      const images = Object.values(data);
+  
+      if (images.length > 1) {
+        setProductImages(images);
+        setImage1(images[0]);
+        setImage2(images[1]);
+      } else {
+        setImage1(images[0] || fallbackImage);
+        setImage2(fallbackImage);
+      }
+  
+      setError(null);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message);
+      setImage1(fallbackImage);
+      setImage2(fallbackImage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout= async () => {
     try {
@@ -165,9 +230,10 @@ const LandingPage = () => {
       console.error(error);
     }
   }
+  
   return (
     <div style={styles.container}>
-      <div >
+      <div>
         <MultiCenterGradient>
         <Navbar />
           <section style={styles.hero}>
@@ -195,7 +261,23 @@ const LandingPage = () => {
               </p>
             </div>
             <div>
-              <img src="/api/placeholder/600/400" alt="Clothing rack" style={styles.image} />
+              {isLoading ? (
+                <div style={{...styles.image, display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                  Loading fashion image...
+                </div>
+              ) : (
+                <div style={styles.image}>
+                  <img 
+                    src={image2 || fallbackImage} 
+                    alt="Fashion item" 
+                    style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                    onError={(e) => {
+                      console.error('Image failed to load:', e.target.src);
+                      e.target.src = fallbackImage;
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -215,7 +297,17 @@ const LandingPage = () => {
               <p>Our dedicated user base enables us to deliver more accurate recommendations, which gets better each time you use it.</p>
             </div>
             <div>
-              <img src="/api/placeholder/300/400" alt="Fashion model" style={styles.image} />
+              <div style={styles.image}>
+                  <img 
+                    src={image1 || fallbackImage} 
+                    alt="Fashion item" 
+                    style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                    onError={(e) => {
+                      console.error('Image failed to load:', e.target.src);
+                      e.target.src = fallbackImage;
+                    }}
+                  />
+                </div>
             </div>
           </div>
         </section>
