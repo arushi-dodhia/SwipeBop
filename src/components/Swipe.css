@@ -1,0 +1,178 @@
+/* SwipeBop.css */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .swipebop-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .swipebop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  
+  .swipebop-logo {
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 2px;
+  }
+  
+  .swipebop-nav {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .swipebop-nav a {
+    font-size: 14px;
+    color: #999;
+    text-decoration: none;
+  }
+  
+  .swipebop-nav a.active {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 256px;
+  }
+  
+  .error-message {
+    color: #e53e3e;
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .card-container {
+    position: relative;
+    margin-bottom: 48px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 16px;
+  }
+  
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .product-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding-bottom: 8px;
+    background-color: white;
+  }
+  
+  .dislike-overlay, .like-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    z-index: 10;
+  }
+  
+  .dislike-overlay {
+    background-color: rgba(239, 68, 68, 0.7);
+  }
+  
+  .like-overlay {
+    background-color: rgba(34, 197, 94, 0.7);
+  }
+  
+  .product-image {
+    height: 192px;
+    overflow: hidden;
+  }
+  
+  .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .product-info {
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .brand {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  
+  .name {
+    font-size: 11px;
+    font-weight: 400;
+    margin-bottom: 2px;
+  }
+  
+  .price {
+    font-size: 11px;
+    font-weight: 600;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 32px;
+  }
+  
+  .action-button {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+  }
+  
+  .action-button span {
+    font-size: 24px;
+  }
+  
+  .dislike span {
+    color: #ef4444;
+  }
+  
+  .reset span {
+    color: #777;
+  }
+  
+  .share span {
+    color: #f97316;
+  }
+  
+  .like span {
+    color: #22c55e;
+  }
+  
+  /* Make sure fixed product info matches reference exactly */
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }

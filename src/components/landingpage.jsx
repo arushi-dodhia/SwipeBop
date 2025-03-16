@@ -230,7 +230,7 @@ const LandingPage = () => {
         </section>
       </div>
 
-      <div style={{ height: '250px', overflow: 'hidden' }}>
+      <div style={{ height: '180px', overflow: 'hidden' }}>
         <MultiCenterGradient style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
