@@ -1,82 +1,95 @@
-
-
 import React, { useState, useRef, useEffect } from 'react';
+import './Swipe.css'; 
 
-const Swiping = () => {
+const SwipeBop = () => {
   const [products, setProducts] = useState({
     accessories: [],
     pants: [],
     shirts: [],
-    shoes: []
+    shoes: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [gridPosition, setGridPosition] = useState(0);
-  const gridSwipeRef = useRef(null);
-  const gridStartX = useRef(0);
-  const gridDeltaX = useRef(0);
-  const gridIsSwiping = useRef(false);
-
-  const [itemPositions, setItemPositions] = useState({});
-  const itemSwipeRefs = useRef({});
-  const itemStartX = useRef({});
-  const itemDeltaX = useRef({});
-  const itemIsSwiping = useRef({});
-
+  const cardRefs = useRef({});
+  const startX = useRef({});
+  const currentX = useRef({});
+  const isSwiping = useRef({});
   const SWIPE_THRESHOLD = 100;
-  const MAX_GRID_POSITION = 200;
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const categories = [
-          { type: 'accessories', query: 'accessories' },
-          { type: 'pants', query: 'pants' },
-          { type: 'shirts', query: 'shirts' },
-          { type: 'shoes', query: 'shoes' }
-        ];
-
+        const categories = ['accessories', 'pants', 'shirts', 'shoes'];
         const fetchedProducts = {};
 
         for (const category of categories) {
           const queryParams = new URLSearchParams({
             lang: 'en-US',
             currency: 'USD',
-            q: category.query,
+            q: category,
             limit: 10,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
             allowOutOfStockItems: 'false',
-            dept: 'WOMENS'
+            dept: 'WOMENS',
           });
 
-          const response = await fetch(`http://3.142.196.127:5000/swipebop/browse?${queryParams}`, {
+          const response = await fetch(`http://3.142.196.127:5000/swipebop/images?${queryParams}`, {
             method: 'GET',
             headers: {
-              'Accept': 'application/json',
-              'Client-Id': 'Shopbop-UW-Team2-2024', 
-              'Client-Version': '1.0.0'
-            }
+              Accept: 'application/json',
+              'Client-Id': 'Shopbop-UW-Team2-2024',
+              'Client-Version': '1.0.0',
+            },
           });
 
           if (!response.ok) {
-            throw new Error(`Failed to fetch ${category.type} products`);
+            throw new Error(`Failed to fetch ${category} products`);
           }
 
           const data = await response.json();
           
-          if (Array.isArray(data.products)) {
-            // Select the first product for each category
-            fetchedProducts[category.type] = data.products[0] || null;
+          //image data 
+          if (data && typeof data === 'object') {
+            const productArray = Object.entries(data).map(([id, product]) => {
+              if (typeof product === 'object') {
+                return {
+                  id,
+                  imageUrl: product.imageUrl || product.image,
+                  name: product.name || 'Product Name',
+                  brand: product.brand || 'Brand Name',
+                  price: product.price || '$0.00',
+                  category
+                };
+              } else {
+                return {
+                  id,
+                  imageUrl: product,
+                  name: `${category.charAt(0).toUpperCase() + category.slice(1)} Item`,
+                  brand: 'Fashion Brand',
+                  price: '$99.00',
+                  category
+                };
+              }
+            });
+            
+            fetchedProducts[category] = productArray.slice(0, 5);
+          } else if (Array.isArray(data.products)) {
+            fetchedProducts[category] = data.products.slice(0, 5).map(product => ({
+              ...product,
+              category
+            }));
+          } else {
+            fetchedProducts[category] = [];
           }
         }
 
         setProducts(fetchedProducts);
         setError(null);
       } catch (err) {
+        console.error("Fetch error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -86,230 +99,222 @@ const Swiping = () => {
     fetchProducts();
   }, []);
 
-  const handleGridTouchStart = (e) => {
-    gridStartX.current = e.touches[0].clientX;
-    gridIsSwiping.current = true;        
+  const handleTouchStart = (e, id) => {
+    startX.current[id] = e.touches[0].clientX;
+    isSwiping.current[id] = true;
+    cardRefs.current[id].style.transition = '';
   };
 
-  const handleGridTouchMove = (e) => {
-    if (!gridIsSwiping.current) return;
+  const handleTouchMove = (e, id) => {
+    if (!isSwiping.current[id]) return;
     
-    const currentX = e.touches[0].clientX;
-    gridDeltaX.current = currentX - gridStartX.current;
+    const touchX = e.touches[0].clientX;
+    const deltaX = touchX - startX.current[id];
+    currentX.current[id] = deltaX;
     
-    const newPosition = gridPosition + gridDeltaX.current;
+    const limitedDelta = Math.min(Math.max(deltaX, -150), 150);
     
-    if (gridSwipeRef.current) {
-      const limitedPosition = Math.max(Math.min(newPosition, MAX_GRID_POSITION), -MAX_GRID_POSITION);
-      gridSwipeRef.current.style.transform = `translateX(${limitedPosition}px)`;
-    }
-  };
-
-  const handleGridTouchEnd = () => {
-    if (!gridIsSwiping.current) return;
+    cardRefs.current[id].style.transform = `translateX(${limitedDelta}px) rotate(${limitedDelta * 0.05}deg)`;
     
-    let newPosition = gridPosition;
-    
-    if (gridDeltaX.current > SWIPE_THRESHOLD) {
-      newPosition = Math.min(gridPosition + 200, MAX_GRID_POSITION);
-    } else if (gridDeltaX.current < -SWIPE_THRESHOLD) {
-      newPosition = Math.max(gridPosition - 200, -MAX_GRID_POSITION);
-    }
-    
-    if (gridSwipeRef.current) {
-      gridSwipeRef.current.style.transition = 'transform 0.3s ease';
-      gridSwipeRef.current.style.transform = `translateX(${newPosition}px)`;
-      
-      setTimeout(() => {
-        if (gridSwipeRef.current) {
-          gridSwipeRef.current.style.transition = '';
-        }
-      }, 300);
-    }
-    
-    setGridPosition(newPosition);
-    gridIsSwiping.current = false;
-  };
-
-  // Individual item swipe handlers
-  const handleItemTouchStart = (e, id) => {
-    e.stopPropagation(); // Prevent triggering parent grid swipe
-    itemStartX.current[id] = e.touches[0].clientX;
-    itemIsSwiping.current[id] = true;
-  };
-
-  const handleItemTouchMove = (e, id) => {
-    e.stopPropagation(); // Prevent triggering parent grid swipe
-    
-    if (!itemIsSwiping.current[id]) return;
-    
-    const currentX = e.touches[0].clientX;
-    itemDeltaX.current[id] = currentX - itemStartX.current[id];
-    
-    const currentPosition = itemPositions[id] || 0;
-    const newPosition = currentPosition + itemDeltaX.current[id];
-    
-    // Apply transform with limits
-    if (itemSwipeRefs.current[id]) {
-      const limitedPosition = Math.max(Math.min(newPosition, 100), -100);
-      itemSwipeRefs.current[id].style.transform = `translateX(${limitedPosition}px)`;
-    }
-  };
-
-  const handleItemTouchEnd = (e, id) => {
-    e.stopPropagation(); 
-    
-    if (!itemIsSwiping.current[id]) return;
-    
-    const currentPosition = itemPositions[id] || 0;
-    let newPosition = currentPosition;
-    
-    if (itemDeltaX.current[id] > SWIPE_THRESHOLD) {
-      newPosition = 100; // Swiped right
-      handleProductAction(id, 'like');
-    } else if (itemDeltaX.current[id] < -SWIPE_THRESHOLD) {
-      newPosition = -100; // Swiped left
-      handleProductAction(id, 'discard');
+    const card = cardRefs.current[id];
+    if (deltaX > 0) {
+      // Liking - show green overlay
+      card.querySelector('.like-overlay').style.opacity = Math.min(deltaX / 100, 0.8);
+      card.querySelector('.dislike-overlay').style.opacity = 0;
+    } else if (deltaX < 0) {
+      // Disliking - show red overlay
+      card.querySelector('.dislike-overlay').style.opacity = Math.min(-deltaX / 100, 0.8);
+      card.querySelector('.like-overlay').style.opacity = 0;
     } else {
-      newPosition = 0; // Return to center
+      // Reset overlays
+      card.querySelector('.like-overlay').style.opacity = 0;
+      card.querySelector('.dislike-overlay').style.opacity = 0;
     }
-    
-    if (itemSwipeRefs.current[id]) {
-      itemSwipeRefs.current[id].style.transition = 'transform 0.3s ease';
-      itemSwipeRefs.current[id].style.transform = `translateX(${newPosition}px)`;
-      
-      setTimeout(() => {
-        if (itemSwipeRefs.current[id]) {
-          itemSwipeRefs.current[id].style.transition = '';
-        }
-      }, 300);
-    }
-    
-    setItemPositions(prev => ({
-      ...prev,
-      [id]: newPosition
-    }));
-    
-    itemIsSwiping.current[id] = false;
   };
 
-  const handleProductAction = async (productId, action) => {
-    try {
-      const response = await fetch('/api/products/action', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          productId,
-          action
-        })
-      });
+  const handleTouchEnd = (e, id) => {
+    if (!isSwiping.current[id]) return;
+    
+    const deltaX = currentX.current[id];
+    const card = cardRefs.current[id];
+    card.style.transition = 'transform 0.3s ease';
+    
+    if (deltaX > SWIPE_THRESHOLD) {
+      // Swiped right - like
+      card.style.transform = 'translateX(1000px) rotate(30deg)';
+      console.log(`Liked product ${id}`);
+      setTimeout(() => removeCard(id), 300);
+    } else if (deltaX < -SWIPE_THRESHOLD) {
+      // Swiped left - dislike
+      card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+      console.log(`Disliked product ${id}`);
+      setTimeout(() => removeCard(id), 300);
+    } else {
+      // Return to center
+      card.style.transform = 'translateX(0) rotate(0)';
+      card.querySelector('.like-overlay').style.opacity = 0;
+      card.querySelector('.dislike-overlay').style.opacity = 0;
+    }
+    
+    isSwiping.current[id] = false;
+  };
+
+  const removeCard = (id) => {
+    setProducts(prevProducts => {
+      const updatedProducts = {...prevProducts};
       
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} product`);
+      // Find which category contains this product
+      for (const category in updatedProducts) {
+        const index = updatedProducts[category].findIndex(product => product.id === id);
+        if (index !== -1) {
+          updatedProducts[category] = [
+            ...updatedProducts[category].slice(0, index),
+            {...updatedProducts[category][index], hidden: true},
+            ...updatedProducts[category].slice(index + 1)
+          ];
+          break;
+        }
       }
       
-    } catch (err) {
-      console.error(`Error ${action} product:`, err);
-    }
+      return updatedProducts;
+    });
   };
 
-  const renderSwipeActions = (id, position) => {
-    const leftVisible = position > 50;
-    const rightVisible = position < -50;
-    const renderProductCard = (product, category) => {
-        if (!product) return null;
+  const handleButtonAction = (action) => {
+    // Get all product ids
+    const visibleProductIds = [];
+    Object.values(products).forEach(categoryProducts => {
+      categoryProducts.forEach(product => {
+        if (!product.hidden) visibleProductIds.push(product.id);
+      });
+    });
     
-        return (
-          <div 
-            key={`${category}-${product.id}`}
-            className="relative overflow-hidden bg-white shadow-md rounded-lg"
-          >
-            <div
-              ref={el => itemSwipeRefs.current[product.id] = el}
-              className="relative"
-              onTouchStart={(e) => handleItemTouchStart(e, product.id)}
-              onTouchMove={(e) => handleItemTouchMove(e, product.id)}
-              onTouchEnd={(e) => handleItemTouchEnd(e, product.id)}
-            >
-              {renderSwipeActions(product.id, itemPositions[product.id] || 0)}
-              
-              <div className="relative">
-                <img 
-                  src={product.images && product.images[0]} 
-                  alt={product.title} 
-                  className="w-full h-48 object-cover" 
-                />
-                <div className="absolute top-2 left-2 bg-white/75 px-2 py-1 rounded">
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+    visibleProductIds.forEach(id => {
+      const card = cardRefs.current[id];
+      if (!card) return;
+      
+      card.style.transition = 'transform 0.3s ease';
+      
+      switch(action) {
+        case 'dislike':
+          card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+          setTimeout(() => removeCard(id), 300);
+          break;
+        case 'reset':
+          card.style.transform = 'translateX(0) rotate(0)';
+          card.querySelector('.like-overlay').style.opacity = 0;
+          card.querySelector('.dislike-overlay').style.opacity = 0;
+          break;
+        case 'like':
+          card.style.transform = 'translateX(1000px) rotate(30deg)';
+          setTimeout(() => removeCard(id), 300);
+          break;
+        default:
+          break;
+      }
+    });
+  };
+
+
+  const getSelectedProducts = () => {
+    const selectedProducts = [];
+    
+    // Get one product from each category
+    const categories = ['shirts', 'accessories', 'pants', 'shoes'];
+    categories.forEach(category => {
+      const visibleProducts = products[category].filter(p => !p.hidden);
+      if (visibleProducts.length > 0) {
+        selectedProducts.push(visibleProducts[0]);
+      }
+    });
+    
+    return selectedProducts;
+  };
+
+  return (
+    <div className="swipebop-container">
+      <header className="swipebop-header">
+      <div className="swipebop-logo">s w i p e b o p</div>
+        <nav className="swipebop-nav">
+            <a href="/swipe" className="active">SWIPING</a>
+            <a href="/about-us">ABOUT</a>
+            <a href="/contact-us">CONTACT</a>
+            <a href="/login">LOG IN</a>
+            <a href="/signup">SIGN UP</a>
+            <a href="/outfits">CLOSET</a>
+        </nav>
+      </header>
+
+      {loading ? (
+        <div className="loading-container">
+          <p>Loading products...</p>
+        </div>
+      ) : error ? (
+        <div className="error-message">Error: {error}</div>
+      ) : (
+        <div className="card-container">
+          <div className="card-grid">
+            {getSelectedProducts().map((product, index) => (
+              <div 
+                key={product.id}
+                ref={el => cardRefs.current[product.id] = el}
+                className="product-card"
+                onTouchStart={e => handleTouchStart(e, product.id)}
+                onTouchMove={e => handleTouchMove(e, product.id)}
+                onTouchEnd={e => handleTouchEnd(e, product.id)}
+                style={{ touchAction: 'pan-y' }}
+              >
+                <div className="dislike-overlay"></div>
+                <div className="like-overlay"></div>
+
+                <div className="product-image">
+                  <img 
+                    src={product.imageUrl || '/api/placeholder/400/320'} 
+                    alt={`${product.name} image`}
+                  />
+                </div>
+                
+                <div className="product-info">
+                  <p className="brand">{product.brand || 'Brand'}</p>
+                  <h3 className="name">{product.name || 'Product Name'}</h3>
+                  <p className="price">{product.price || '$0.00'}</p>
                 </div>
               </div>
-              
-              <div className="p-3">
-                <h3 className="text-sm font-medium truncate">{product.title}</h3>
-                <p className="text-sm font-bold">${product.price}</p>
-              </div>
-            </div>
-          </div>
-        );
-      };
-    
-      if (loading) {
-        return <div className="flex justify-center items-center h-64">Loading products...</div>;
-      }
-    
-      if (error) {
-        return <div className="text-red-500 text-center p-4">Error: {error}</div>;
-      }
-    
-      return (
-        <div className="max-w-lg mx-auto p-4">
-          <h2 className="text-xl font-bold mb-4">Swipeable Products</h2>
-          
-          <div 
-            ref={gridSwipeRef}
-            className="relative bg-gray-100 shadow-lg rounded-lg overflow-hidden"
-            onTouchStart={handleGridTouchStart}
-            onTouchMove={handleGridTouchMove}
-            onTouchEnd={handleGridTouchEnd}
-          >
-            <div className="grid grid-cols-2 gap-4 p-4">
-              {Object.entries(products).map(([category, product]) => (
-                product ? (
-                  <div 
-                    key={`${category}-${product.id}`}
-                    ref={(el) => itemSwipeRefs.current[product.id] = el}
-                    className="relative bg-white shadow-md rounded-lg overflow-hidden"
-                    onTouchStart={(e) => handleItemTouchStart(e, product.id)}
-                    onTouchMove={(e) => handleItemTouchMove(e, product.id)}
-                    onTouchEnd={(e) => handleItemTouchEnd(e, product.id)}
-                  >
-                    {renderSwipeActions(product.id, itemPositions[product.id] || 0)}
-                    
-                    <div className="relative">
-                      <img 
-                        src={product.images && product.images[0]} 
-                        alt={product.title} 
-                        className="w-full h-48 object-cover" 
-                      />
-                      <div className="absolute top-2 left-2 bg-white/75 px-2 py-1 rounded">
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </div>
-                    </div>
-                    
-                    <div className="p-3">
-                      <h3 className="text-sm font-medium truncate">{product.title}</h3>
-                      <p className="text-sm font-bold">${product.price}</p>
-                    </div>
-                  </div>
-                ) : null
-              ))}
-            </div>
+            ))}
           </div>
         </div>
-      );
-    }
-  }
-    
-export default Swiping;
+      )}
+
+      <div className="action-buttons">
+        <button 
+          onClick={() => handleButtonAction('dislike')}
+          className="action-button dislike"
+        >
+          <span>✕</span>
+        </button>
+        
+        <button 
+          onClick={() => handleButtonAction('reset')}
+          className="action-button reset"
+        >
+          <span>↺</span>
+        </button>
+        
+        <button 
+          className="action-button share"
+        >
+          <span>→</span>
+        </button>
+        
+        <button 
+          onClick={() => handleButtonAction('like')}
+          className="action-button like"
+        >
+          <span>♥</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default SwipeBop;
