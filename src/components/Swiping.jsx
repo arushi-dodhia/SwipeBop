@@ -50,7 +50,6 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
-          
           //image data 
           if (data && typeof data === 'object') {
             const productArray = Object.entries(data).map(([id, product]) => {
@@ -232,8 +231,11 @@ const SwipeBop = () => {
   };
 
   return (
+
+    
     <div className="swipebop-container">
-      <header className="swipebop-header">
+
+    <header className="swipebop-header">
       <div className="swipebop-logo">s w i p e b o p</div>
         <nav className="swipebop-nav">
             <a href="/swipe" className="active">SWIPING</a>
@@ -244,7 +246,6 @@ const SwipeBop = () => {
             <a href="/outfits">CLOSET</a>
         </nav>
       </header>
-
       {loading ? (
         <div className="loading-container">
           <p>Loading products...</p>
