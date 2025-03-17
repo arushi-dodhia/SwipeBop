@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Swipe.css'; 
+import Navbar from './Navbar';
+import Footer from './Footer';
 
 const SwipeBop = () => {
   const [products, setProducts] = useState({
@@ -232,20 +234,9 @@ const SwipeBop = () => {
 
   return (
 
-    
+    <div>
     <div className="swipebop-container">
-
-    <header className="swipebop-header">
-      <div className="swipebop-logo">s w i p e b o p</div>
-        <nav className="swipebop-nav">
-            <a href="/swipe" className="active">SWIPING</a>
-            <a href="/about-us">ABOUT</a>
-            <a href="/contact-us">CONTACT</a>
-            <a href="/login">LOG IN</a>
-            <a href="/signup">SIGN UP</a>
-            <a href="/outfits">CLOSET</a>
-        </nav>
-      </header>
+        <Navbar />
       {loading ? (
         <div className="loading-container">
           <p>Loading products...</p>
@@ -314,6 +305,10 @@ const SwipeBop = () => {
           <span>♥</span>
         </button>
       </div>
+    </div>
+    <div>
+      <Footer />
+    </div>
     </div>
   );
 };

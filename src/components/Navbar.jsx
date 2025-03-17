@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, signOut } from "@aws-amplify/auth";
+import './Swipe.css'; 
 
 const styles = {
     container: {
@@ -151,6 +152,9 @@ const Navbar = () => {
     };
 
     return (
+    <div className="swipebop-container">
+    <header className="swipebop-header">
+    <div className="swipebop-logo">s w i p e b o p</div>
         <nav style={styles.nav}>
             <a href="#" style={styles.navLink} onClick={() => navigate("/")}>HOME</a>
             <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPE</a>
@@ -165,6 +169,9 @@ const Navbar = () => {
                 </>
             }
         </nav >
+
+    </header>
+    </div>
     )
 }
 
