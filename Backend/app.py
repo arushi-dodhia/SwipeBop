@@ -71,6 +71,79 @@ def sanitize_data(params):
             return(jsonify({"error":"language not available"}), 400)
     return None
 
+###new code
+
+
+def filter_product_data(raw_products):
+    filtered_products = []
+    for item in raw_products:
+        product = item.get('product', {})
+        filtered = {
+            "productSin": product.get("productSin"),
+            "productCode": product.get("productCode"),
+            "shortDescription": product.get("shortDescription"),
+            "designerName": product.get("designerName"),
+            "price": product.get("retailPrice", {}).get("price"), 
+            "inStock": product.get("inStock"),
+        }
+        
+        colors = product.get("colors", [])
+        if colors and isinstance(colors, list):
+            images = colors[0].get("images", [])
+            if images and isinstance(images, list):
+                filtered["imageURL"] = baseIMGURL + images[0].get("src", "")
+            else:
+                filtered["imageURL"] = None
+        else:
+            filtered["imageURL"] = None
+
+        filtered_products.append(filtered)
+    return filtered_products
+
+
+@app.route("/swipebop/search_filtered", methods=["GET"])
+def search_products_filtered():
+    
+    allowOutOfStockItems = request.args.get("allowOutOfStockItems", "false").lower()
+    q = request.args.get("q", "shirts")
+    sort = request.args.get("sort", "ratings")
+    minPrice = request.args.get("minPrice", "0")
+    maxPrice = request.args.get("maxPrice", "1000000")
+    limit = request.args.get("limit", "10")
+    dept = request.args.get("dept", "WOMENS")
+    lang = request.args.get("lang", "en-US")
+    offset = request.args.get("offset", "0")
+
+    url = baseURL + "/public/search"
+    params = {
+        "allowOutOfStockItems": allowOutOfStockItems,
+        "q": q,
+        "sort": sort,
+        "minPrice": minPrice,
+        "maxPrice": maxPrice,
+        "limit": limit,
+        "dept": dept,
+        "lang": lang,
+        "offset": offset
+    }
+
+    sanitize_response = sanitize_data(params)
+    if sanitize_response:
+        return sanitize_response
+
+    raw_data = fetch_from_shopbop(url, params)
+    if not isinstance(raw_data, dict):
+        return jsonify({"error": "Failed to fetch data"}), 500
+
+    raw_products = raw_data.get("products", [])
+    if not raw_products:
+        return jsonify({"error": "No products found"}), 404
+
+    filtered_products = filter_product_data(raw_products)
+    return jsonify({"products": filtered_products})
+
+### end
+
 @app.route("/swipebop/search", methods=["GET"])
 def search_products():
     # Parse + Defaults
