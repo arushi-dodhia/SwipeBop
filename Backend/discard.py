@@ -1,57 +1,59 @@
 import boto3
-import time
+from botocore.exceptions import ClientError
+from datetime import datetime
+from boto3.dynamodb.conditions import Key
 
-session = boto3.Session(profile_name="ryan-profile-1") 
-dynamodb = session.resource("dynamodb", region_name="us-east-2")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+table_name = 'discarded'
+table = dynamodb.Table(table_name)
 
-table = dynamodb.Table("DiscardedItems")
+def insert_item(user_id, product):
+    product_id = product['productSin']
+    category = product['category']
+    price = product['price']
+    time = datetime.datetime.now.time()
 
-def discard_item(user_id, product_id):
-    timestamp = int(time.time())
+    try:
+        table.put_item(
+            Item={
+                'user_id': user_id,
+                'time': time,
+                'product_id': product_id,
+                'category': category,
+                'price': price
+            }
+        )
+    except ClientError as e:
+        raise Exception(f"Unable to insert item: {e.response['Error']['Message']}")
 
-    table.put_item(
-        Item={
-            "user_id": user_id,
-            "product_id": product_id,
-            "time": timestamp
-        }
-    )
+def get_items(user_id):
+    try:
+        response = table.query(
+            KeyConditionExpression=Key('user_id').eq(user_id)
+        )
+        return response.get('Items', [])
+    except ClientError as e:
+        raise Exception(f"Query failed: {e.response['Error']['Message']}")
 
-    return {"message": f"Item {product_id} discarded for user {user_id}"}
-
-# print(discard_item("user123", "1569471937"))
-
-def check_item(user_id, product_id):
-    response = table.get_item(
-        Key={"user_id": user_id, "product_id": product_id}
-    )
-
-    if "Item" in response:
-        print(f"Item {product_id} exists for user {user_id}: {response['Item']}")
-        return True
-    else:
-        print(f"Item {product_id} not found for user {user_id}")
-        return False
-
-check_item("user123", "1569471937")
-
-# def create_table():
-#     table_name = "DiscardedItems"
-
-#     response = dynamodb.create_table(
-#         TableName=table_name,
-#         KeySchema=[
-#             {"AttributeName": "user_id", "KeyType": "HASH"},  # Partition key
-#             {"AttributeName": "product_id", "KeyType": "RANGE"}  # Sort key
-#         ],
-#         AttributeDefinitions=[
-#             {"AttributeName": "user_id", "AttributeType": "S"},
-#             {"AttributeName": "product_id", "AttributeType": "S"}
-#         ],
-#         BillingMode="PAY_PER_REQUEST"
-#     )
-
-#     return response
-
-# Run this once to create the table
-# print(create_table())
+def get_item(user_id, product_id):
+    try:
+        response = table.get_item(
+            Key={
+                'user_id': user_id,
+                'product_id': product_id
+            }
+        )
+        return response.get('Item')
+    except ClientError as e:
+        raise Exception(f"Get item failed: {e.response['Error']['Message']}")
+    
+def remove_item(user_id, product_id):
+    try:
+        table.delete_item(
+            Key={
+                'user_id': user_id,
+                'product_id': product_id
+            }
+        )
+    except ClientError as e:
+        raise Exception(f"Delete failed: {e.response['Error']['Message']}")

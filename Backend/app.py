@@ -4,6 +4,7 @@ from flask_cors import CORS
 from cachetools import LFUCache
 import json
 import sys
+import discard
 
 app = Flask(__name__)
 CORS(app)
@@ -302,6 +303,55 @@ def get_images():
             continue
 
     return jsonify(img_urls if img_urls else {"error": "Failed to fetch image URLs"})
+
+@app.route('/swipebop/discard/insert', methods=['POST'])
+def insert_discarded():
+    data = request.json
+    user_id = data.get('user_id')
+    product = data.get('product')
+
+    if not user_id or not product:
+        return jsonify({"error": "Missing user_id or product data"}), 400
+
+    try:
+        time_inserted = discard.insert_item(user_id, product)
+        return jsonify({"status": "Item inserted", "time": time_inserted}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('swipebop/discard/<user_id>', methods=['GET'])
+def get_discarded(user_id):
+    try:
+        items = discard.get_items(user_id)
+        return jsonify({"items": items}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('swipebop/discard/<user_id>/<product_id>', methods=['GET'])
+def get_discarded_item(user_id, product_id):
+    try:
+        item = discard.get_item(user_id, product_id)
+        if item:
+            return jsonify({"discarded_item": item}), 200
+        else:
+            return jsonify({"error": "Item not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('swipebop/discard/delete', methods=['POST'])
+def delete_discarded():
+    data = request.json
+    user_id = data.get('user_id')
+    product_id = data.get('product_id')
+
+    if not user_id or not product_id:
+        return jsonify({"error": "Missing user_id or time"}), 400
+
+    try:
+        discard.remove_item(user_id, product_id)
+        return jsonify({"status": "Item removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
