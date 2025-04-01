@@ -28,7 +28,7 @@ knn.fit(features)
 pca = PCA(n_components=2)
 features_2d = pca.fit_transform(features)
 
-np.random.seed(42)
+np.random.seed(42)``
 initial_index = np.random.choice(range(features.shape[0]))
 user_pref = features[initial_index].astype(float)
 
