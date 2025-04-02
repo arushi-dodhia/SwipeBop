@@ -319,7 +319,7 @@ def insert_discarded():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@app.route('swipebop/discard/<user_id>', methods=['GET'])
+@app.route('/swipebop/discard/<user_id>', methods=['GET'])
 def get_discarded(user_id):
     try:
         items = discard.get_items(user_id)
@@ -327,7 +327,7 @@ def get_discarded(user_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('swipebop/discard/<user_id>/<product_id>', methods=['GET'])
+@app.route('/swipebop/discard/<user_id>/<product_id>', methods=['GET'])
 def get_discarded_item(user_id, product_id):
     try:
         item = discard.get_item(user_id, product_id)
@@ -338,7 +338,7 @@ def get_discarded_item(user_id, product_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('swipebop/discard/delete', methods=['POST'])
+@app.route('/swipebop/discard/delete', methods=['POST'])
 def delete_discarded():
     data = request.json
     user_id = data.get('user_id')
