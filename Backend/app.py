@@ -5,6 +5,7 @@ from cachetools import LFUCache
 import json
 import sys
 import discard
+import outfit
 
 app = Flask(__name__)
 CORS(app)
@@ -353,7 +354,69 @@ def delete_discarded():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('swipebop/outfits/insert', methods=['POST'])
+def insert_outfit():
+    data = request.json
+    user_id = data.get('user_id')
+    outfit = data.get('outfit')
 
+    if not user_id or not outfit:
+        return jsonify({"error": "Missing user_id or outfit data"}), 400
+
+    try:
+        outfit_id = outfit.insert_outfit(user_id, outfit)
+        return jsonify({"status": "Outfit inserted", "outfit_id": outfit_id}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/outfits/<user_id>', methods=['GET'])
+def get_outfits(user_id):
+    try:
+        outfits = outfit.get_outfits(user_id)
+        return jsonify({"outfits": outfits}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/outfits/<user_id>/<outfit_id>', methods=['GET'])
+def get_outfit(user_id, outfit_id):
+    try:
+        outfit = outfit.get_outfit(user_id, outfit_id)
+        if outfit:
+            return jsonify({"outfit": outfit}), 200
+        else:
+            return jsonify({"error": "Outfit not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/outfits/delete', methods=['POST'])
+def delete_outfit():
+    data = request.json
+    user_id = data.get('user_id')
+    outfit_id = data.get('outfit_id')
+
+    if not user_id or not outfit_id:
+        return jsonify({"error": "Missing user_id or outfit_id"}), 400
+
+    try:
+        outfit.remove_outfit(user_id, outfit_id)
+        return jsonify({"status": "Outfit removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/outfits/delete_all', methods=['POST'])
+def delete_all_outfits():
+    data = request.json
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    try:
+        outfit.remove_outfits(user_id)
+        return jsonify({"status": "All outfits removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
 
