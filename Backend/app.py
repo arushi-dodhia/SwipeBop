@@ -354,7 +354,7 @@ def delete_discarded():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('swipebop/outfits/insert', methods=['POST'])
+@app.route('/swipebop/outfits/insert', methods=['POST'])
 def insert_outfit():
     data = request.json
     user_id = data.get('user_id')
