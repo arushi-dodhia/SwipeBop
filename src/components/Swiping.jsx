@@ -284,6 +284,7 @@ const SwipeBop = () => {
     }
 
     try {
+      console.log("Saving outfit:", outfits);
       const res = await fetch(
         "http://18.118.186.108:5000/swipebop/outfits/insert",
         {
