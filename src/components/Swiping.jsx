@@ -297,13 +297,13 @@ const SwipeBop = () => {
           }),
         }
       );
-      if (response.ok) {
-        const result = await response.json();
+      if (res.ok) {
+        const result = await res.json();
         alert("Outfit shared successfully!");
         console.log(result);
         handleButtonAction("like");
       } else {
-        const error = await response.json();
+        const error = await res.json();
         alert(`Failed to share outfit: ${error.error}`);
         console.error(error);
       }
