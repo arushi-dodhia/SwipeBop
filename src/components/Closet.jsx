@@ -154,6 +154,7 @@ const Closet = () => {
       );
       const data = await response.json();
       setOutfits(data);
+      console.log(outfits);
     } catch (error) {
       console.error("Error fetching outfits:", error);
     }
@@ -171,12 +172,14 @@ const Closet = () => {
           {isLoggedIn ? (
             <>
               <h1 style={{ ...styles.h1, color: "#DB3B14" }}>Outfits</h1>
-              {outfits ? (
+              {outfits == null ? (
                 <div className="loading-container">
                   <p>Loading products...</p>
                 </div>
               ) : (
-                <></>
+                <div className="loading-container">
+                  <p>Products</p>
+                </div>
               )}
             </>
           ) : (
