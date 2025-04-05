@@ -358,13 +358,13 @@ def delete_discarded():
 def insert_outfit():
     data = request.json
     user_id = data.get('user_id')
-    outfit = data.get('outfit')
+    outfit_data = data.get('outfit')
 
-    if not user_id or not outfit:
+    if not user_id or not outfit_data:
         return jsonify({"error": "Missing user_id or outfit data"}), 400
 
     try:
-        outfit_id = outfit.insert_outfit(user_id, outfit)
+        outfit_id = outfit.insert_outfit(user_id, outfit_data)
         return jsonify({"status": "Outfit inserted", "outfit_id": outfit_id}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

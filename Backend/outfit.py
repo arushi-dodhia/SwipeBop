@@ -10,7 +10,7 @@ table = dynamodb.Table(table_name)
 
 def insert_outfit(user_id, outfit):
     outfit_id = uuid.uuid4()
-
+    
     try:
         table.put_item(
             Item={
