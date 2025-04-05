@@ -370,7 +370,7 @@ def insert_outfit():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/swipebop/outfits/<user_id>', methods=['GET'])
-def get_outfits(user_id):
+def get_outfits_db(user_id):
     try:
         outfits = outfit.get_outfits(user_id)
         return jsonify({"outfits": outfits}), 200
