@@ -10,16 +10,17 @@ table = dynamodb.Table(table_name)
 
 def insert_outfit(user_id, outfit):
     outfit_id = uuid.uuid4()
-    
+
     try:
         table.put_item(
             Item={
                 'user_id': user_id,
                 'outfit_id': str(outfit_id),
                 'outfit': outfit,
-                'timestamp': datetime.now().time()
+                'timestamp': datetime.now().isoformat()
             }
         )
+        return outfit_id
     except ClientError as e:
         raise Exception(f"Unable to insert outfit: {e.response['Error']['Message']}")
     
