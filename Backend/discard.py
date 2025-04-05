@@ -4,7 +4,7 @@ from datetime import datetime
 from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table_name = 'discarded'
+table_name = 'discard'
 table = dynamodb.Table(table_name)
 
 def insert_item(user_id, product):
