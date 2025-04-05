@@ -9,8 +9,6 @@ table = dynamodb.Table(table_name)
 
 def insert_item(user_id, product):
     product_id = product['productSin']
-    category = product['category']
-    price = product['price']
     time = datetime.datetime.now.time()
 
     try:
@@ -19,8 +17,7 @@ def insert_item(user_id, product):
                 'user_id': user_id,
                 'time': time,
                 'product_id': product_id,
-                'category': category,
-                'price': price
+                'product': product
             }
         )
     except ClientError as e:

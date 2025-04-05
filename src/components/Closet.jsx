@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from "./gradient";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import "./Swipe.css";
 
 const styles = {
   container: {
@@ -124,13 +125,20 @@ const styles = {
 
 const Closet = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userID, setUserID] = useState(null);
+  const [outfits, setOutfits] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const user = await getCurrentUser();
-        setIsLoggedIn(!!user);
+        setIsLoggedIn(user);
+        setUserID(user.username);
+
+        if(user.username) {
+          await fetchOutfits(user.username);
+        }
       } catch (error) {
         setIsLoggedIn(false);
       }
@@ -139,16 +147,38 @@ const Closet = () => {
     fetchUser();
   }, []);
 
+  const fetchOutfits = async (userID) => {
+    try {
+      const response = await fetch(
+        `http://18.118.186.108:5000/swipebop/outfits/${userID}`
+      );
+      const data = await response.json();
+      setOutfits(data);
+    } catch (error) {
+      console.error("Error fetching outfits:", error);
+    }
+
+  }
+
   return (
-    <div style={styles.container}>
-      <MultiCenterGradient>
+    <>
+      <div style={styles.container}>
         <Navbar />
         <section style={styles.hero}>
           <h1 style={{ ...styles.h1, fontStyle: "italic", fontSize: "5rem" }}>
             swipebop closet
           </h1>
           {isLoggedIn ? (
-            <h1 style={{ ...styles.h1, color: "#DB3B14" }}>OUTFITS</h1>
+            <>
+              <h1 style={{ ...styles.h1, color: "#DB3B14" }}>Outfits</h1>
+              {outfits ? (
+                <div className="loading-container">
+                  <p>Loading products...</p>
+                </div>
+              ) : (
+                <></>
+              )}
+            </>
           ) : (
             <>
               <h1 style={{ ...styles.h1, color: "#DB3B14" }}>
@@ -167,9 +197,9 @@ const Closet = () => {
             </>
           )}
         </section>
-      </MultiCenterGradient>
+      </div>
       <Footer />
-    </div>
+    </>
   );
 };
 

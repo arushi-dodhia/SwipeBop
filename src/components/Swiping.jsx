@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './Swipe.css'; 
-import Navbar from './Navbar';
-import Footer from './Footer';
+import React, { useState, useRef, useEffect } from "react";
+import { getCurrentUser } from "@aws-amplify/auth";
+import "./Swipe.css";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 const SwipeBop = () => {
   const [products, setProducts] = useState({
@@ -17,71 +18,94 @@ const SwipeBop = () => {
   const currentX = useRef({});
   const isSwiping = useRef({});
   const SWIPE_THRESHOLD = 100;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userID, setUserID] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setIsLoggedIn(user);
+        setUserID(user.username);
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const categories = ['accessories', 'pants', 'shirts', 'shoes'];
+        const categories = ["accessories", "pants", "shirts", "shoes"];
         const fetchedProducts = {};
 
         for (const category of categories) {
           const queryParams = new URLSearchParams({
-            lang: 'en-US',
-            currency: 'USD',
+            lang: "en-US",
+            currency: "USD",
             q: category,
             limit: 10,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
-            allowOutOfStockItems: 'false',
-            dept: 'WOMENS',
+            allowOutOfStockItems: "false",
+            dept: "WOMENS",
           });
 
-          const response = await fetch(`http://3.142.196.127:5000/swipebop/images?${queryParams}`, {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              'Client-Id': 'Shopbop-UW-Team2-2024',
-              'Client-Version': '1.0.0',
-            },
-          });
+          const response = await fetch(
+            `http://18.118.186.108:5000/swipebop/images?${queryParams}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                "Client-Id": "Shopbop-UW-Team2-2024",
+                "Client-Version": "1.0.0",
+              },
+            }
+          );
 
           if (!response.ok) {
             throw new Error(`Failed to fetch ${category} products`);
           }
 
           const data = await response.json();
-          //image data 
-          if (data && typeof data === 'object') {
+          //image data
+          if (data && typeof data === "object") {
             const productArray = Object.entries(data).map(([id, product]) => {
-              if (typeof product === 'object') {
+              if (typeof product === "object") {
                 return {
                   id,
                   imageUrl: product.imageUrl || product.image,
-                  name: product.name || 'Product Name',
-                  brand: product.brand || 'Brand Name',
-                  price: product.price || '$0.00',
-                  category
+                  name: product.name || "Product Name",
+                  brand: product.brand || "Brand Name",
+                  price: product.price || "$0.00",
+                  category,
                 };
               } else {
                 return {
                   id,
                   imageUrl: product,
-                  name: `${category.charAt(0).toUpperCase() + category.slice(1)} Item`,
-                  brand: 'Fashion Brand',
-                  price: '$99.00',
-                  category
+                  name: `${
+                    category.charAt(0).toUpperCase() + category.slice(1)
+                  } Item`,
+                  brand: "Fashion Brand",
+                  price: "$99.00",
+                  category,
                 };
               }
             });
-            
+
             fetchedProducts[category] = productArray.slice(0, 5);
           } else if (Array.isArray(data.products)) {
-            fetchedProducts[category] = data.products.slice(0, 5).map(product => ({
-              ...product,
-              category
-            }));
+            fetchedProducts[category] = data.products
+              .slice(0, 5)
+              .map((product) => ({
+                ...product,
+                category,
+              }));
           } else {
             fetchedProducts[category] = [];
           }
@@ -103,80 +127,92 @@ const SwipeBop = () => {
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
     isSwiping.current[id] = true;
-    cardRefs.current[id].style.transition = '';
+    cardRefs.current[id].style.transition = "";
   };
 
   const handleTouchMove = (e, id) => {
     if (!isSwiping.current[id]) return;
-    
+
     const touchX = e.touches[0].clientX;
     const deltaX = touchX - startX.current[id];
     currentX.current[id] = deltaX;
-    
+
     const limitedDelta = Math.min(Math.max(deltaX, -150), 150);
-    
-    cardRefs.current[id].style.transform = `translateX(${limitedDelta}px) rotate(${limitedDelta * 0.05}deg)`;
-    
+
+    cardRefs.current[
+      id
+    ].style.transform = `translateX(${limitedDelta}px) rotate(${
+      limitedDelta * 0.05
+    }deg)`;
+
     const card = cardRefs.current[id];
     if (deltaX > 0) {
       // Liking - show green overlay
-      card.querySelector('.like-overlay').style.opacity = Math.min(deltaX / 100, 0.8);
-      card.querySelector('.dislike-overlay').style.opacity = 0;
+      card.querySelector(".like-overlay").style.opacity = Math.min(
+        deltaX / 100,
+        0.8
+      );
+      card.querySelector(".dislike-overlay").style.opacity = 0;
     } else if (deltaX < 0) {
       // Disliking - show red overlay
-      card.querySelector('.dislike-overlay').style.opacity = Math.min(-deltaX / 100, 0.8);
-      card.querySelector('.like-overlay').style.opacity = 0;
+      card.querySelector(".dislike-overlay").style.opacity = Math.min(
+        -deltaX / 100,
+        0.8
+      );
+      card.querySelector(".like-overlay").style.opacity = 0;
     } else {
       // Reset overlays
-      card.querySelector('.like-overlay').style.opacity = 0;
-      card.querySelector('.dislike-overlay').style.opacity = 0;
+      card.querySelector(".like-overlay").style.opacity = 0;
+      card.querySelector(".dislike-overlay").style.opacity = 0;
     }
   };
 
   const handleTouchEnd = (e, id) => {
     if (!isSwiping.current[id]) return;
-    
+
     const deltaX = currentX.current[id];
     const card = cardRefs.current[id];
-    card.style.transition = 'transform 0.3s ease';
-    
+    card.style.transition = "transform 0.3s ease";
+
     if (deltaX > SWIPE_THRESHOLD) {
       // Swiped right - like
-      card.style.transform = 'translateX(1000px) rotate(30deg)';
+      card.style.transform = "translateX(1000px) rotate(30deg)";
       console.log(`Liked product ${id}`);
       setTimeout(() => removeCard(id), 300);
     } else if (deltaX < -SWIPE_THRESHOLD) {
       // Swiped left - dislike
-      card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+      card.style.transform = "translateX(-1000px) rotate(-30deg)";
       console.log(`Disliked product ${id}`);
       setTimeout(() => removeCard(id), 300);
     } else {
       // Return to center
-      card.style.transform = 'translateX(0) rotate(0)';
-      card.querySelector('.like-overlay').style.opacity = 0;
-      card.querySelector('.dislike-overlay').style.opacity = 0;
+      card.style.transform = "translateX(0) rotate(0)";
+      card.querySelector(".like-overlay").style.opacity = 0;
+      card.querySelector(".dislike-overlay").style.opacity = 0;
     }
-    
+
     isSwiping.current[id] = false;
   };
 
   const removeCard = (id) => {
-    setProducts(prevProducts => {
-      const updatedProducts = {...prevProducts};
-      
+    setProducts((prevProducts) => {
+      const updatedProducts = { ...prevProducts };
+
       // Find which category contains this product
       for (const category in updatedProducts) {
-        const index = updatedProducts[category].findIndex(product => product.id === id);
+        const index = updatedProducts[category].findIndex(
+          (product) => product.id === id
+        );
         if (index !== -1) {
           updatedProducts[category] = [
             ...updatedProducts[category].slice(0, index),
-            {...updatedProducts[category][index], hidden: true},
-            ...updatedProducts[category].slice(index + 1)
+            { ...updatedProducts[category][index], hidden: true },
+            ...updatedProducts[category].slice(index + 1),
           ];
           break;
         }
       }
-      
+
       return updatedProducts;
     });
   };
@@ -184,30 +220,33 @@ const SwipeBop = () => {
   const handleButtonAction = (action) => {
     // Get all product ids
     const visibleProductIds = [];
-    Object.values(products).forEach(categoryProducts => {
-      categoryProducts.forEach(product => {
+    Object.values(products).forEach((categoryProducts) => {
+      categoryProducts.forEach((product) => {
         if (!product.hidden) visibleProductIds.push(product.id);
       });
     });
-    
-    visibleProductIds.forEach(id => {
+
+    visibleProductIds.forEach((id) => {
       const card = cardRefs.current[id];
       if (!card) return;
-      
-      card.style.transition = 'transform 0.3s ease';
-      
-      switch(action) {
-        case 'dislike':
-          card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+
+      card.style.transition = "transform 0.3s ease";
+
+      switch (action) {
+        case "dislike":
+          card.style.transform = "translateX(-1000px) rotate(-30deg)";
           setTimeout(() => removeCard(id), 300);
           break;
-        case 'reset':
-          card.style.transform = 'translateX(0) rotate(0)';
-          card.querySelector('.like-overlay').style.opacity = 0;
-          card.querySelector('.dislike-overlay').style.opacity = 0;
+        case "reset":
+          card.style.transform = "translateX(0) rotate(0)";
+          card.querySelector(".like-overlay").style.opacity = 0;
+          card.querySelector(".dislike-overlay").style.opacity = 0;
           break;
-        case 'like':
-          card.style.transform = 'translateX(1000px) rotate(30deg)';
+        case "like":
+          card.style.transform = "translateX(1000px) rotate(30deg)";
+          setTimeout(() => removeCard(id), 300);
+          break;
+        case "save":
           setTimeout(() => removeCard(id), 300);
           break;
         default:
@@ -216,99 +255,143 @@ const SwipeBop = () => {
     });
   };
 
-
   const getSelectedProducts = () => {
     const selectedProducts = [];
-    
+
     // Get one product from each category
-    const categories = ['shirts', 'accessories', 'pants', 'shoes'];
-    categories.forEach(category => {
-      const visibleProducts = products[category].filter(p => !p.hidden);
+    const categories = ["shirts", "accessories", "pants", "shoes"];
+    categories.forEach((category) => {
+      const visibleProducts = products[category].filter((p) => !p.hidden);
       if (visibleProducts.length > 0) {
         selectedProducts.push(visibleProducts[0]);
       }
     });
-    
+
     return selectedProducts;
   };
 
+  const handleSaveOutfit = async () => {
+    if (!isLoggedIn) {
+      alert("Please log in to save outfits.");
+      return;
+    }
+
+    const outfits = getSelectedProducts();
+
+    if (outfits.length === 0) {
+      alert("No products selected");
+      return;
+    }
+
+    try {
+      console.log("Saving outfit:", outfits);
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/outfits/insert",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            outfit: outfits,
+            user_id: userID,
+          }),
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        alert("Outfit shared successfully!");
+        console.log(result);
+        handleButtonAction("like");
+      } else {
+        const error = await response.json();
+        alert(`Failed to share outfit: ${error.error}`);
+        console.error(error);
+      }
+    } catch (error) {
+      console.error("Error saving outfit:", error);
+      alert("Error saving outfit. Please try again.");
+    }
+
+  };
+
   return (
-
     <div>
-    <div className="swipebop-container">
+      <div className="swipebop-container">
         <Navbar />
-      {loading ? (
-        <div className="loading-container">
-          <p>Loading products...</p>
-        </div>
-      ) : error ? (
-        <div className="error-message">Error: {error}</div>
-      ) : (
-        <div className="card-container">
-          <div className="card-grid">
-            {getSelectedProducts().map((product, index) => (
-              <div 
-                key={product.id}
-                ref={el => cardRefs.current[product.id] = el}
-                className="product-card"
-                onTouchStart={e => handleTouchStart(e, product.id)}
-                onTouchMove={e => handleTouchMove(e, product.id)}
-                onTouchEnd={e => handleTouchEnd(e, product.id)}
-                style={{ touchAction: 'pan-y' }}
-              >
-                <div className="dislike-overlay"></div>
-                <div className="like-overlay"></div>
-
-                <div className="product-image">
-                  <img 
-                    src={product.imageUrl || '/api/placeholder/400/320'} 
-                    alt={`${product.name} image`}
-                  />
-                </div>
-                
-                <div className="product-info">
-                  <p className="brand">{product.brand || 'Brand'}</p>
-                  <h3 className="name">{product.name || 'Product Name'}</h3>
-                  <p className="price">{product.price || '$0.00'}</p>
-                </div>
-              </div>
-            ))}
+        {loading ? (
+          <div className="loading-container">
+            <p>Loading products...</p>
           </div>
-        </div>
-      )}
+        ) : error ? (
+          <div className="error-message">Error: {error}</div>
+        ) : (
+          <div className="card-container">
+            <div className="card-grid">
+              {getSelectedProducts().map((product, index) => (
+                <div
+                  key={product.id}
+                  ref={(el) => (cardRefs.current[product.id] = el)}
+                  className="product-card"
+                  onTouchStart={(e) => handleTouchStart(e, product.id)}
+                  onTouchMove={(e) => handleTouchMove(e, product.id)}
+                  onTouchEnd={(e) => handleTouchEnd(e, product.id)}
+                  style={{ touchAction: "pan-y" }}
+                >
+                  <div className="dislike-overlay"></div>
+                  <div className="like-overlay"></div>
 
-      <div className="action-buttons">
-        <button 
-          onClick={() => handleButtonAction('dislike')}
-          className="action-button dislike"
-        >
-          <span>✕</span>
-        </button>
-        
-        <button 
-          onClick={() => handleButtonAction('reset')}
-          className="action-button reset"
-        >
-          <span>↺</span>
-        </button>
-        
-        <button 
-          className="action-button share"
-        >
-          <span>→</span>
-        </button>
-        
-        <button 
-          onClick={() => handleButtonAction('like')}
-          className="action-button like"
-        >
-          <span>♥</span>
-        </button>
+                  <div className="product-image">
+                    <img
+                      src={product.imageUrl || "/api/placeholder/400/320"}
+                      alt={`${product.name} image`}
+                    />
+                  </div>
+
+                  <div className="product-info">
+                    <p className="brand">{product.brand || "Brand"}</p>
+                    <h3 className="name">{product.name || "Product Name"}</h3>
+                    <p className="price">{product.price || "$0.00"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="action-buttons">
+          <button
+            onClick={() => handleButtonAction("dislike")}
+            className="action-button dislike"
+          >
+            <span>✕</span>
+          </button>
+
+          <button
+            onClick={() => handleButtonAction("reset")}
+            className="action-button reset"
+          >
+            <span>↺</span>
+          </button>
+
+          <button
+            onClick={() => handleSaveOutfit()}
+            className="action-button save"
+          >
+            <span>→</span>
+          </button>
+
+          <button
+            onClick={() => handleButtonAction("like")}
+            className="action-button like"
+          >
+            <span>♥</span>
+          </button>
+        </div>
       </div>
-    </div>
-    <div>
-      <Footer />
-    </div>
+      <div>
+        <Footer />
+      </div>
     </div>
   );
 };
