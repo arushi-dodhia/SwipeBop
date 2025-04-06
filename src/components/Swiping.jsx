@@ -299,12 +299,12 @@ const SwipeBop = () => {
       );
       if (res.ok) {
         const result = await res.json();
-        alert("Outfit shared successfully!");
+        alert("Outfit saved successfully!");
         console.log(result);
         handleButtonAction("like");
       } else {
         const error = await res.json();
-        alert(`Failed to share outfit: ${error.error}`);
+        alert(`Failed to save outfit: ${error.error}`);
         console.error(error);
       }
     } catch (error) {

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { getCurrentUser } from "@aws-amplify/auth";
 import { useNavigate } from "react-router-dom";
-import MultiCenterGradient from "./gradient";
 import Navbar from "./Navbar";
+import Outfit from "./Outfit";
 import Footer from "./Footer";
 import "./Swipe.css";
 
@@ -154,19 +154,45 @@ const Closet = () => {
       );
       const data = await response.json();
       setOutfits(data);
-      console.log(outfits);
     } catch (error) {
       console.error("Error fetching outfits:", error);
     }
 
   }
 
+  const removeOutfit = async (outfitId) => {
+    try {
+      const res = await fetch('http://18.118.186.108:5000/swipebop/outfits/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          user_id: userID,
+          outfit_id: outfitId }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        alert("Outfit removed successfully!");
+        fetchOutfits(userID);
+        console.log(result);
+      } else {
+        const error = await res.json();
+        alert(`Failed to remove outfit: ${error.error}`);
+        console.error(error);
+      }
+    }  catch (error) {
+      console.error("Error removing outfit:", error);
+      alert("Error removing outfit. Please try again later.");
+    }
+  };
+
   return (
     <>
       <div style={styles.container}>
         <Navbar />
         <section style={styles.hero}>
-          <h1 style={{ ...styles.h1, fontStyle: "italic", fontSize: "5rem" }}>
+          <h1 style={{ ...styles.h1, color: "#DB3B14", fontStyle: "italic", fontSize: "5rem" }}>
             swipebop closet
           </h1>
           {isLoggedIn ? (
@@ -177,9 +203,10 @@ const Closet = () => {
                   <p>Loading products...</p>
                 </div>
               ) : (
-                <div className="loading-container">
-                  <p>Products</p>
-                </div>
+                <>
+                  {console.log(outfits)}
+                  <Outfit outfits={outfits.outfits} onRemove={removeOutfit}/>
+                </>
               )}
             </>
           ) : (
