@@ -247,6 +247,7 @@ const SwipeBop = () => {
           setTimeout(() => removeCard(id), 300);
           break;
         case "save":
+          card.style.transform = "translateX(1000px) rotate(30deg)";
           setTimeout(() => removeCard(id), 300);
           break;
         default:
@@ -301,7 +302,7 @@ const SwipeBop = () => {
         const result = await res.json();
         alert("Outfit saved successfully!");
         console.log(result);
-        handleButtonAction("like");
+        handleButtonAction("save");
       } else {
         const error = await res.json();
         alert(`Failed to save outfit: ${error.error}`);
