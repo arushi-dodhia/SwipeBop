@@ -281,7 +281,7 @@ const SwipeBop = () => {
   const handleShare = (productId) => {
     // Implement your share/save functionality here
     console.log(`Saving product ${productId} to closet`);
-    // You could show a confirmation message or navigate to a closet view
+
   };
   
   const handleLike = (productId) => {
@@ -402,6 +402,11 @@ const SwipeBop = () => {
                   onTouchMove={(e) => handleTouchMove(e, product.id)}
                   onTouchEnd={(e) => handleTouchEnd(e, product.id)}
                   style={{ touchAction: "pan-y" }}
+                  productId={product.id}
+                  handleDislike={handleDislike}
+                  handleReset={handleReset}
+                  handleShare={handleShare}
+                  handleLike={handleLike}
                 >
                   <div className="dislike-overlay"></div>
                   <div className="like-overlay"></div>
@@ -430,13 +435,6 @@ const SwipeBop = () => {
             className="action-button dislike"
           >
             <span>✕</span>
-          </button>
-
-          <button
-            onClick={() => handleButtonAction("reset")}
-            className="action-button reset"
-          >
-            <span>↺</span>
           </button>
 
           <button
