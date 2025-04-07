@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MultiCenterGradient from './gradient';
 import InputField from "./Input";
-import { signIn } from "@aws-amplify/auth";
+import { confirmResetPassword, resetPassword } from "@aws-amplify/auth";
 import Navbar from "./Navbar";
-import "../login.css";
+import "../login.css"
 import Footer from "./Footer";
 
 const styles = {
@@ -124,24 +124,38 @@ const styles = {
     },
 };
 
-const Login = () => {
-    const navigate = useNavigate();
-    const [error, setError] = useState("");
+const Forgot = () => {
 
-    const handleLogin = async (e) => {
+    const navigate = useNavigate();
+    const [step, setStep] = useState(1); // Step 1: Request reset, Step 2: Enter code & new password
+    const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+
+    async function handleResetPassword(e) {
         e.preventDefault();
-        const form = e.currentTarget
-        const user = form.elements.email.value;
-        const pwd = form.elements.password.value;
+        const username = e.target.email.value;
         try {
-            await signIn({ username: user, password: pwd });
-            setError(""); // Clear any previous errors
-            navigate("/"); // Redirect on success
-        } catch (err) {
-            setError(err.message);
-            console.error("Login error:", err);
+            await resetPassword({ username });
+            setStep(2);
+        } catch (error) {
+            console.log(error);
         }
-    };
+    }
+
+    async function handleConfirmResetPassword(e) {
+        e.preventDefault();
+        const username = e.target.email.value;
+        const confirmationCode = e.target.code.value;
+        const newPassword = e.target.newPassword.value;
+        console.log(confirmationCode);
+        try {
+          await confirmResetPassword({ username, confirmationCode, newPassword });
+          navigate("/login");
+        } catch (error) {
+            setError(error.message);
+          console.log(error);
+        }
+      }
 
     return (
         <div style={styles.container}>
@@ -155,18 +169,29 @@ const Login = () => {
                         height: '90vh',  // Ensures it takes the full gradient height
                     }}>
                         <div className="login-container">
-                            <h2 className="form-title">Log in</h2>
-                            {error && <p className="error-message">{error}</p>} {/* Display error */}
-                            <form action="#" className="login-form" onSubmit={handleLogin}>
-                                <InputField type="text" name="email" placeholder="Email / Username" icon="mail" />
-                                <InputField type="password" name="password" placeholder="Password" icon="lock" />
-                                <a href="#" className="forgot-password-link" onClick={() => navigate("/forgot")}>Forgot password?</a>
-                                <button type="submit" className="login-button">Log In</button>
-                            </form>
+                            <h2 className="form-title">Forgot Password?</h2>
+                            {error && <p className="error-message">{error}</p>}
+                            {message && <p className="success-message">{message}</p>}
+
+                            {step === 1 ? (
+                                <form className="login-form" onSubmit={handleResetPassword}>
+                                    <InputField type="text" name="email" placeholder="Email / Username" icon="mail" />
+                                    <button type="submit" className="login-button">Send Reset Code</button>
+                                </form>
+                            ) : (
+                                <form className="login-form" onSubmit={handleConfirmResetPassword}>
+                                    <InputField type="text" name="email" placeholder="Email / Username" icon="mail" />
+                                    <InputField type="text" name="code" placeholder="Enter code" icon="key" />
+                                    <InputField type="password" name="newPassword" placeholder="Enter new password" icon="lock" />
+                                    <button type="submit" className="login-button">Reset Password</button>
+                                </form>
+                            )}
+
                             <p className="signup-prompt">
-                                Don&apos;t have an account? <a href="#" className="signup-link" onClick={() => navigate("/signup")}>Sign up</a>
+                                Remembered your password? <a href="#" className="signup-link" onClick={() => navigate("/login")}>Login</a>
                             </p>
                         </div>
+
                     </div>
                 </MultiCenterGradient>
             </div>
@@ -175,4 +200,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Forgot;

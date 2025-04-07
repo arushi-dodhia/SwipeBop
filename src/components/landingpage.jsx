@@ -3,6 +3,7 @@ import MultiCenterGradient from './gradient';
 import { useNavigate } from "react-router-dom";
 import Navbar from './Navbar';
 import { getCurrentUser, signOut } from "@aws-amplify/auth";
+import Footer from './Footer';
 
 const styles = {
   container: {
@@ -241,7 +242,7 @@ const LandingPage = () => {
               Effortless fashion at your fingertips<br />
               — swipe, match, and style
             </p>
-            <button style={styles.button}>Start Swiping</button>
+            <button style={styles.button} onClick={() => navigate('/swipe')}>Start Swiping</button>
           </section>
         </MultiCenterGradient>
       </div>
@@ -252,7 +253,7 @@ const LandingPage = () => {
             <div>
               <p style={styles.textLarge}>
                 Say goodbye to endless scrolling, headaches rooms until shopping has you
-                drained. Say, hello. Find your perfect match in seconds.
+                drained. Say, hello to finding your perfect match in seconds.
               </p>
               <p style={styles.textLarge}>
                 No filters, no complicated choices, just pure style at your fingertips.
@@ -326,23 +327,12 @@ const LandingPage = () => {
         <MultiCenterGradient style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
-            <button style={{ ...styles.button }}>Start Swiping</button>
+            <button style={{ ...styles.button }} onClick={() => navigate('/swipe')}>Start Swiping</button>
           </div>
         </MultiCenterGradient>
       </div>
 
-      <footer style={styles.footer}>
-        <div style={styles.mainContainer}>
-          <div style={styles.footerLinks}>
-            <a href="#" style={styles.footerLink}>Company</a>
-            <a href="#" style={styles.footerLink}>Social Media</a>
-            <a href="#" style={styles.footerLink}>Privacy</a>
-            <a href="#" style={styles.footerLink}>Terms</a>
-            <a href="#" style={styles.footerLink}>Contact</a>
-            <a href="#" style={styles.footerLink}>Help</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

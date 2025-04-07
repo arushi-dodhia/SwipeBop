@@ -4,6 +4,8 @@ from flask_cors import CORS
 from cachetools import LFUCache
 import json
 import sys
+import discard
+import outfit
 
 app = Flask(__name__)
 CORS(app)
@@ -70,6 +72,79 @@ def sanitize_data(params):
         if params["lang"] not in languages:
             return(jsonify({"error":"language not available"}), 400)
     return None
+
+###new code
+
+
+def filter_product_data(raw_products):
+    filtered_products = []
+    for item in raw_products:
+        product = item.get('product', {})
+        filtered = {
+            "productSin": product.get("productSin"),
+            "productCode": product.get("productCode"),
+            "shortDescription": product.get("shortDescription"),
+            "designerName": product.get("designerName"),
+            "price": product.get("retailPrice", {}).get("price"), 
+            "inStock": product.get("inStock"),
+        }
+        
+        colors = product.get("colors", [])
+        if colors and isinstance(colors, list):
+            images = colors[0].get("images", [])
+            if images and isinstance(images, list):
+                filtered["imageURL"] = baseIMGURL + images[0].get("src", "")
+            else:
+                filtered["imageURL"] = None
+        else:
+            filtered["imageURL"] = None
+
+        filtered_products.append(filtered)
+    return filtered_products
+
+
+@app.route("/swipebop/search_filtered", methods=["GET"])
+def search_products_filtered():
+    
+    allowOutOfStockItems = request.args.get("allowOutOfStockItems", "false").lower()
+    q = request.args.get("q", "shirts")
+    sort = request.args.get("sort", "ratings")
+    minPrice = request.args.get("minPrice", "0")
+    maxPrice = request.args.get("maxPrice", "1000000")
+    limit = request.args.get("limit", "10")
+    dept = request.args.get("dept", "WOMENS")
+    lang = request.args.get("lang", "en-US")
+    offset = request.args.get("offset", "0")
+
+    url = baseURL + "/public/search"
+    params = {
+        "allowOutOfStockItems": allowOutOfStockItems,
+        "q": q,
+        "sort": sort,
+        "minPrice": minPrice,
+        "maxPrice": maxPrice,
+        "limit": limit,
+        "dept": dept,
+        "lang": lang,
+        "offset": offset
+    }
+
+    sanitize_response = sanitize_data(params)
+    if sanitize_response:
+        return sanitize_response
+
+    raw_data = fetch_from_shopbop(url, params)
+    if not isinstance(raw_data, dict):
+        return jsonify({"error": "Failed to fetch data"}), 500
+
+    raw_products = raw_data.get("products", [])
+    if not raw_products:
+        return jsonify({"error": "No products found"}), 404
+
+    filtered_products = filter_product_data(raw_products)
+    return jsonify({"products": filtered_products})
+
+### end
 
 @app.route("/swipebop/search", methods=["GET"])
 def search_products():
@@ -230,7 +305,118 @@ def get_images():
 
     return jsonify(img_urls if img_urls else {"error": "Failed to fetch image URLs"})
 
+@app.route('/swipebop/discard/insert', methods=['POST'])
+def insert_discarded():
+    data = request.json
+    user_id = data.get('user_id')
+    product = data.get('product')
 
+    if not user_id or not product:
+        return jsonify({"error": "Missing user_id or product data"}), 400
+
+    try:
+        time_inserted = discard.insert_item(user_id, product)
+        return jsonify({"status": "Item inserted", "time": time_inserted}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/discard/<user_id>', methods=['GET'])
+def get_discarded(user_id):
+    try:
+        items = discard.get_items(user_id)
+        return jsonify({"items": items}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/discard/<user_id>/<product_id>', methods=['GET'])
+def get_discarded_item(user_id, product_id):
+    try:
+        item = discard.get_item(user_id, product_id)
+        if item:
+            return jsonify({"discarded_item": item}), 200
+        else:
+            return jsonify({"error": "Item not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/discard/delete', methods=['POST'])
+def delete_discarded():
+    data = request.json
+    user_id = data.get('user_id')
+    product_id = data.get('product_id')
+
+    if not user_id or not product_id:
+        return jsonify({"error": "Missing user_id or time"}), 400
+
+    try:
+        discard.remove_item(user_id, product_id)
+        return jsonify({"status": "Item removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/outfits/insert', methods=['POST'])
+def insert_outfit():
+    data = request.json
+    user_id = data.get('user_id')
+    outfit_data = data.get('outfit')
+
+    if not user_id or not outfit_data:
+        return jsonify({"error": "Missing user_id or outfit data"}), 400
+
+    try:
+        outfit_id = outfit.insert_outfit(user_id, outfit_data)
+        return jsonify({"status": "Outfit inserted", "outfit_id": outfit_id}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/outfits/<user_id>', methods=['GET'])
+def get_outfits_db(user_id):
+    try:
+        outfits = outfit.get_outfits(user_id)
+        return jsonify({"outfits": outfits}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/outfits/<user_id>/<outfit_id>', methods=['GET'])
+def get_outfit(user_id, outfit_id):
+    try:
+        outfit = outfit.get_outfit(user_id, outfit_id)
+        if outfit:
+            return jsonify({"outfit": outfit}), 200
+        else:
+            return jsonify({"error": "Outfit not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/outfits/delete', methods=['POST'])
+def delete_outfit():
+    data = request.json
+    user_id = data.get('user_id')
+    outfit_id = data.get('outfit_id')
+
+    if not user_id or not outfit_id:
+        return jsonify({"error": "Missing user_id or outfit_id"}), 400
+
+    try:
+        outfit.remove_outfit(user_id, outfit_id)
+        return jsonify({"status": "Outfit removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/outfits/delete_all', methods=['POST'])
+def delete_all_outfits():
+    data = request.json
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    try:
+        outfit.remove_outfits(user_id)
+        return jsonify({"status": "All outfits removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
 
