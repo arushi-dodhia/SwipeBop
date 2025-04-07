@@ -270,15 +270,15 @@ const SwipeBop = () => {
     setTimeout(() => removeCard(productId), 300);
   };
 
-  const handleReset = (productId) => {
-    const card = cardRefs.current[productId];
-    if (!card) return;
+  // const handleReset = (productId) => {
+  //   const card = cardRefs.current[productId];
+  //   if (!card) return;
 
-    card.style.transition = "transform 0.3s ease";
-    card.style.transform = "translateX(0) rotate(0)";
-    card.querySelector(".like-overlay").style.opacity = 0;
-    card.querySelector(".dislike-overlay").style.opacity = 0;
-  };
+  //   card.style.transition = "transform 0.3s ease";
+  //   card.style.transform = "translateX(0) rotate(0)";
+  //   card.querySelector(".like-overlay").style.opacity = 0;
+  //   card.querySelector(".dislike-overlay").style.opacity = 0;
+  // };
 
   const handleLike = (productId) => {
     const card = cardRefs.current[productId];
@@ -373,7 +373,6 @@ const SwipeBop = () => {
         const result = await res.json();
         alert("Outfit saved successfully!");
         handleButtonAction("save");
-        console.log(result);
       } else {
         const error = await res.json();
         alert(`Failed to save outfit: ${error.error}`);
@@ -409,9 +408,8 @@ const SwipeBop = () => {
                   style={{ touchAction: "pan-y" }}
                   productId={product.id}
                   handleDislike={handleDislike}
-                  handleReset={handleReset}
-                  handleSaveOutfit={handleSaveOutfit}
                   handleLike={handleLike}
+                  isLoggedIn={isLoggedIn}
                 >
                   <div className="dislike-overlay"></div>
                   <div className="like-overlay"></div>
