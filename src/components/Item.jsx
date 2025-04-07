@@ -113,14 +113,6 @@ const Item = forwardRef(({
             </Button>
             
             <Button 
-              variant="secondary" 
-              className="action-button reset"
-              onClick={onReset}
-            >
-              <span>↺</span>
-            </Button>
-            
-            <Button 
               variant="info" 
               className="action-button share"
               onClick={onShare}
