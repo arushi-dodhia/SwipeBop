@@ -74,7 +74,7 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
-          
+
           if (data && typeof data === "object") {
             console.log(data);
             const ids = Object.keys(data);
@@ -139,22 +139,24 @@ const SwipeBop = () => {
         const detailsData = {}; // Object to store details of each product
 
         for (const productId of productIds) {
-          const response = await fetch(`http://18.118.186.108:5000/swipebop/search`, {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              'Client-Id': 'Shopbop-UW-Team2-2024',
-              'Client-Version': '1.0.0',
-            },
-          });
+          const response = await fetch(
+            `http://18.118.186.108:5000/swipebop/search`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                "Client-Id": "Shopbop-UW-Team2-2024",
+                "Client-Version": "1.0.0",
+              },
+            }
+          );
 
           if (!response.ok) {
             throw new Error(`Failed to fetch product ${productId}`);
           }
 
           const data = await response.json();
-          console.log(data);
-          detailsData[productId] = data; 
+          detailsData[productId] = data;
         }
 
         //setProductDetails(detailsData);
@@ -164,7 +166,7 @@ const SwipeBop = () => {
     };
 
     fetchProductDetails();
-  }, [productIds]);
+  }, []);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -262,36 +264,39 @@ const SwipeBop = () => {
   const handleDislike = (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-    
-    card.style.transition = 'transform 0.3s ease';
-    card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(-1000px) rotate(-30deg)";
     setTimeout(() => removeCard(productId), 300);
   };
-  
+
   const handleReset = (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-    
-    card.style.transition = 'transform 0.3s ease';
-    card.style.transform = 'translateX(0) rotate(0)';
-    card.querySelector('.like-overlay').style.opacity = 0;
-    card.querySelector('.dislike-overlay').style.opacity = 0;
-  };
-  
-  const handleShare = (productId) => {
-    // Implement your share/save functionality here
-    console.log(`Saving product ${productId} to closet`);
 
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(0) rotate(0)";
+    card.querySelector(".like-overlay").style.opacity = 0;
+    card.querySelector(".dislike-overlay").style.opacity = 0;
   };
-  
+
   const handleLike = (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-    
-    card.style.transition = 'transform 0.3s ease';
-    card.style.transform = 'translateX(1000px) rotate(30deg)';
+
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(1000px) rotate(30deg)";
     setTimeout(() => removeCard(productId), 300);
   };
+
+  const handleSaveSwipe = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(1000px) rotate(30deg)";
+    setTimeout(() => removeCard(productId), 300);
+  };  
 
   const handleButtonAction = (action) => {
     // Get all product ids
@@ -303,18 +308,18 @@ const SwipeBop = () => {
     });
 
     visibleProductIds.forEach((id) => {
-      switch(action) {
-        case 'dislike':
+      switch (action) {
+        case "dislike":
           handleDislike(id);
           break;
-        case 'reset':
+        case "reset":
           handleReset(id);
           break;
-        case 'like':
+        case "like":
           handleLike(id);
           break;
-        case 'save':
-          handleShare(id);
+        case "save":
+          handleSaveSwipe(id);
           break;
         default:
           break;
@@ -367,8 +372,8 @@ const SwipeBop = () => {
       if (res.ok) {
         const result = await res.json();
         alert("Outfit saved successfully!");
-        console.log(result);
         handleButtonAction("save");
+        console.log(result);
       } else {
         const error = await res.json();
         alert(`Failed to save outfit: ${error.error}`);
@@ -405,7 +410,7 @@ const SwipeBop = () => {
                   productId={product.id}
                   handleDislike={handleDislike}
                   handleReset={handleReset}
-                  handleShare={handleShare}
+                  handleSaveOutfit={handleSaveOutfit}
                   handleLike={handleLike}
                 >
                   <div className="dislike-overlay"></div>
