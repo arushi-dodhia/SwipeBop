@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import LandingPage from "./components/landingpage";
 import Swiping from "./components/Swiping"
 import Login  from "./components/Login"

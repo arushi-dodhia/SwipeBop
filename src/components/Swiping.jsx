@@ -3,6 +3,7 @@ import { getCurrentUser } from "@aws-amplify/auth";
 import "./Swipe.css";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import Item from "./Item";
 
 const SwipeBop = () => {
   const [products, setProducts] = useState({
@@ -13,6 +14,7 @@ const SwipeBop = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [productIds, setProductIds] = useState([]);
   const cardRefs = useRef({});
   const startX = useRef({});
   const currentX = useRef({});
@@ -72,8 +74,13 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
-          //image data
+          
           if (data && typeof data === "object") {
+            console.log(data);
+            const ids = Object.keys(data);
+            setProductIds(ids);
+            console.log("Fetched product IDs:", ids);
+
             const productArray = Object.entries(data).map(([id, product]) => {
               if (typeof product === "object") {
                 return {
@@ -123,6 +130,41 @@ const SwipeBop = () => {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (productIds.length === 0) return;
+
+      try {
+        const detailsData = {}; // Object to store details of each product
+
+        for (const productId of productIds) {
+          const response = await fetch(`http://18.118.186.108:5000/swipebop/search`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Client-Id': 'Shopbop-UW-Team2-2024',
+              'Client-Version': '1.0.0',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch product ${productId}`);
+          }
+
+          const data = await response.json();
+          console.log(data);
+          detailsData[productId] = data; 
+        }
+
+        //setProductDetails(detailsData);
+      } catch (err) {
+        console.error("Error fetching product details:", err);
+      }
+    };
+
+    fetchProductDetails();
+  }, [productIds]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -217,6 +259,40 @@ const SwipeBop = () => {
     });
   };
 
+  const handleDislike = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+    
+    card.style.transition = 'transform 0.3s ease';
+    card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+    setTimeout(() => removeCard(productId), 300);
+  };
+  
+  const handleReset = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+    
+    card.style.transition = 'transform 0.3s ease';
+    card.style.transform = 'translateX(0) rotate(0)';
+    card.querySelector('.like-overlay').style.opacity = 0;
+    card.querySelector('.dislike-overlay').style.opacity = 0;
+  };
+  
+  const handleShare = (productId) => {
+    // Implement your share/save functionality here
+    console.log(`Saving product ${productId} to closet`);
+    // You could show a confirmation message or navigate to a closet view
+  };
+  
+  const handleLike = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+    
+    card.style.transition = 'transform 0.3s ease';
+    card.style.transform = 'translateX(1000px) rotate(30deg)';
+    setTimeout(() => removeCard(productId), 300);
+  };
+
   const handleButtonAction = (action) => {
     // Get all product ids
     const visibleProductIds = [];
@@ -227,28 +303,18 @@ const SwipeBop = () => {
     });
 
     visibleProductIds.forEach((id) => {
-      const card = cardRefs.current[id];
-      if (!card) return;
-
-      card.style.transition = "transform 0.3s ease";
-
-      switch (action) {
-        case "dislike":
-          card.style.transform = "translateX(-1000px) rotate(-30deg)";
-          setTimeout(() => removeCard(id), 300);
+      switch(action) {
+        case 'dislike':
+          handleDislike(id);
           break;
-        case "reset":
-          card.style.transform = "translateX(0) rotate(0)";
-          card.querySelector(".like-overlay").style.opacity = 0;
-          card.querySelector(".dislike-overlay").style.opacity = 0;
+        case 'reset':
+          handleReset(id);
           break;
-        case "like":
-          card.style.transform = "translateX(1000px) rotate(30deg)";
-          setTimeout(() => removeCard(id), 300);
+        case 'like':
+          handleLike(id);
           break;
-        case "save":
-          card.style.transform = "translateX(1000px) rotate(30deg)";
-          setTimeout(() => removeCard(id), 300);
+        case 'save':
+          handleShare(id);
           break;
         default:
           break;
@@ -312,13 +378,12 @@ const SwipeBop = () => {
       console.error("Error saving outfit:", error);
       alert("Error saving outfit. Please try again.");
     }
-
   };
 
   return (
     <div>
+      <Navbar />
       <div className="swipebop-container">
-        <Navbar />
         {loading ? (
           <div className="loading-container">
             <p>Loading products...</p>
@@ -328,8 +393,8 @@ const SwipeBop = () => {
         ) : (
           <div className="card-container">
             <div className="card-grid">
-              {getSelectedProducts().map((product, index) => (
-                <div
+              {getSelectedProducts().map((product) => (
+                <Item
                   key={product.id}
                   ref={(el) => (cardRefs.current[product.id] = el)}
                   className="product-card"
@@ -353,7 +418,7 @@ const SwipeBop = () => {
                     <h3 className="name">{product.name || "Product Name"}</h3>
                     <p className="price">{product.price || "$0.00"}</p>
                   </div>
-                </div>
+                </Item>
               ))}
             </div>
           </div>
@@ -389,9 +454,7 @@ const SwipeBop = () => {
           </button>
         </div>
       </div>
-      <div>
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
