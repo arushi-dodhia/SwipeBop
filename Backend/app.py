@@ -6,6 +6,7 @@ import json
 import sys
 import discard
 import outfit
+import liked
 
 app = Flask(__name__)
 CORS(app)
@@ -417,6 +418,55 @@ def delete_all_outfits():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+@app.route('/swipebop/liked/insert', methods=['POST'])
+def insertLiked():
+    data = request.json
+    user_id = data.get('user_id')
+    product = data.get('product')
+
+    if not user_id or not product:
+        return jsonify({"error": "Missing user_id or product data"}), 400
+
+    try:
+        time_inserted = liked.likeItem(user_id, product)
+        return jsonify({"status": "Item inserted", "time": time_inserted}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/swipebop/liked/<user_id>', methods=['GET'])
+def getLikedItems(user_id):
+    try:
+        items = liked.getLikedItems(user_id)
+        return jsonify({"items": items}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/liked/<user_id>/<product_id>', methods=['GET'])
+def getLikedItem(user_id, product_id):
+    try:
+        item = liked.getLikedItem(user_id, product_id)
+        if item:
+            return jsonify({"likedItem": item}), 200
+        else:
+            return jsonify({"error": "Item not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/liked/delete', methods=['POST'])
+def deleteLiked():
+    data = request.json
+    user_id = data.get('user_id')
+    product_id = data.get('product_id')
+
+    if not user_id or not product_id:
+        return jsonify({"error": "Missing user_id or time"}), 400
+
+    try:
+        liked.removeLikedItem(user_id, product_id)
+        return jsonify({"status": "Item removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
 
