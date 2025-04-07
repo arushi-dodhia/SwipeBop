@@ -170,9 +170,136 @@
     color: #22c55e;
   }
   
-  /* Make sure fixed product info matches reference exactly */
   .product-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
+  .product-card {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    touch-action: pan-y; 
+  }
+  
+  .like-overlay, .dislike-overlay {
+    pointer-events: none;
+  }
+  
+  .modal-header .modal-title {
+    font-weight: bold;
+  }
+  
+  .brand-name {
+    font-style: italic;
+    color: #666;
+  }
+  
+  .price {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #444;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .modal .action-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .modal .action-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+  }
+  
+  .modal .action-buttons button span {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+  
+  .modal .dislike-btn {
+    background-color: #ff4757;
+    border-color: #ff4757;
+  }
+  
+  .modal .like-btn {
+    background-color: #2ed573;
+    border-color: #2ed573;
+  }
+  
+  .modal .share-btn {
+    background-color: #5352ed;
+    border-color: #5352ed;
+  }
+  
+  
+  .product-swipe-modal .carousel {
+  margin-bottom: 20px;
+}
+
+.product-swipe-modal .carousel-indicators {
+  bottom: -40px;
+}
+
+.product-swipe-modal .carousel-indicators button {
+  background-color: #999;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 5px;
+}
+
+.product-swipe-modal .carousel-indicators .active {
+  background-color: #333;
+}
+
+.product-swipe-modal .carousel-control-prev,
+.product-swipe-modal .carousel-control-next {
+  width: 10%;
+  opacity: 0.7;
+}
+
+.product-swipe-modal .carousel-control-prev-icon,
+.product-swipe-modal .carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 10px;
+}
+
+.product-swipe-modal .product-details {
+  padding: 0 20px;
+  margin-bottom: 40px;
+}
+
+.product-swipe-modal .product-name {
+  font-weight: bold;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.product-swipe-modal .brand-name {
+  font-style: italic;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.product-swipe-modal .price {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+.product-swipe-modal .no-products {
+  padding: 40px 0;
+  color: #666;
+}

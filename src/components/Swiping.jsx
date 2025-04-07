@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Swipe.css'; 
+import Navbar from './Navbar';
+import Item from "./Item";
 
 const SwipeBop = () => {
   const [products, setProducts] = useState({
@@ -10,6 +12,7 @@ const SwipeBop = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [productIds, setProductIds] = useState([]);
   const cardRefs = useRef({});
   const startX = useRef({});
   const currentX = useRef({});
@@ -36,7 +39,7 @@ const SwipeBop = () => {
             dept: 'WOMENS',
           });
 
-          const response = await fetch(`http://3.142.196.127:5000/swipebop/images?${queryParams}`, {
+          const response = await fetch(`http://18.118.186.108:5000/swipebop/images?${queryParams}`, {
             method: 'GET',
             headers: {
               Accept: 'application/json',
@@ -50,6 +53,11 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
+          console.log(data);
+          const ids = Object.keys(data);
+          setProductIds(ids);
+          console.log("Fetched product IDs:", ids);
+
           //image data 
           if (data && typeof data === 'object') {
             const productArray = Object.entries(data).map(([id, product]) => {
@@ -97,6 +105,41 @@ const SwipeBop = () => {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (productIds.length === 0) return;
+
+      try {
+        const detailsData = {}; // Object to store details of each product
+
+        for (const productId of productIds) {
+          const response = await fetch(`http://18.118.186.108:5000/swipebop/search`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Client-Id': 'Shopbop-UW-Team2-2024',
+              'Client-Version': '1.0.0',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch product ${productId}`);
+          }
+
+          const data = await response.json();
+          console.log(data);
+          detailsData[productId] = data; 
+        }
+
+        //setProductDetails(detailsData);
+      } catch (err) {
+        console.error("Error fetching product details:", err);
+      }
+    };
+
+    fetchProductDetails();
+  }, [productIds]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -179,6 +222,40 @@ const SwipeBop = () => {
     });
   };
 
+  const handleDislike = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+    
+    card.style.transition = 'transform 0.3s ease';
+    card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+    setTimeout(() => removeCard(productId), 300);
+  };
+  
+  const handleReset = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+    
+    card.style.transition = 'transform 0.3s ease';
+    card.style.transform = 'translateX(0) rotate(0)';
+    card.querySelector('.like-overlay').style.opacity = 0;
+    card.querySelector('.dislike-overlay').style.opacity = 0;
+  };
+  
+  const handleShare = (productId) => {
+    // Implement your share/save functionality here
+    console.log(`Saving product ${productId} to closet`);
+    // You could show a confirmation message or navigate to a closet view
+  };
+  
+  const handleLike = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+    
+    card.style.transition = 'transform 0.3s ease';
+    card.style.transform = 'translateX(1000px) rotate(30deg)';
+    setTimeout(() => removeCard(productId), 300);
+  };
+
   const handleButtonAction = (action) => {
     // Get all product ids
     const visibleProductIds = [];
@@ -189,30 +266,25 @@ const SwipeBop = () => {
     });
     
     visibleProductIds.forEach(id => {
-      const card = cardRefs.current[id];
-      if (!card) return;
-      
-      card.style.transition = 'transform 0.3s ease';
-      
       switch(action) {
         case 'dislike':
-          card.style.transform = 'translateX(-1000px) rotate(-30deg)';
-          setTimeout(() => removeCard(id), 300);
+          handleDislike(id);
           break;
         case 'reset':
-          card.style.transform = 'translateX(0) rotate(0)';
-          card.querySelector('.like-overlay').style.opacity = 0;
-          card.querySelector('.dislike-overlay').style.opacity = 0;
+          handleReset(id);
+          break;
+        case 'share':
+          handleShare(id);
           break;
         case 'like':
-          card.style.transform = 'translateX(1000px) rotate(30deg)';
-          setTimeout(() => removeCard(id), 300);
+          handleLike(id);
           break;
         default:
           break;
       }
     });
   };
+  
 
 
   const getSelectedProducts = () => {
@@ -230,91 +302,92 @@ const SwipeBop = () => {
     return selectedProducts;
   };
 
+  
+
   return (
-
     
-    <div className="swipebop-container">
+    <div>
+        <Navbar></Navbar>
+        <div className="swipebop-container">
 
-    <header className="swipebop-header">
-      <div className="swipebop-logo">s w i p e b o p</div>
-        <nav className="swipebop-nav">
-            <a href="/swipe" className="active">SWIPING</a>
-            <a href="/about-us">ABOUT</a>
-            <a href="/contact-us">CONTACT</a>
-            <a href="/login">LOG IN</a>
-            <a href="/signup">SIGN UP</a>
-            <a href="/outfits">CLOSET</a>
-        </nav>
-      </header>
-      {loading ? (
-        <div className="loading-container">
-          <p>Loading products...</p>
+
+        {loading ? (
+            <div className="loading-container">
+            <p>Loading products...</p>
+            </div>
+        ) : error ? (
+            <div className="error-message">Error: {error}</div>
+        ) : (
+            <div className="card-container">
+            <div className="card-grid">
+                {getSelectedProducts().map((product, index) => (
+                <Item 
+                    key={product.id}
+                    ref={el => cardRefs.current[product.id] = el}
+                    className="product-card"
+                    onTouchStart={e => handleTouchStart(e, product.id)}
+                    onTouchMove={e => handleTouchMove(e, product.id)}
+                    onTouchEnd={e => handleTouchEnd(e, product.id)}
+
+                    style={{ touchAction: 'pan-y' }}
+                    productId={product.id}
+                    handleDislike={handleDislike}
+                    handleReset={handleReset}
+                    handleShare={handleShare}
+                    handleLike={handleLike}
+                >
+                    <div className="dislike-overlay"></div>
+                    <div className="like-overlay"></div>
+
+                    <div className="product-image">
+                    <img 
+                        src={product.imageUrl || '/api/placeholder/400/320'} 
+                        alt={`${product.name} image`}
+                    />
+                    </div>
+                    
+                    <div className="product-info">
+                    <p className="brand">{product.brand || 'Brand'}</p>
+                    <h3 className="name">{product.name || 'Product Name'}</h3>
+                    <p className="price">{product.price || '$0.00'}</p>
+                    </div>
+                </Item>
+                ))}
+            </div>
+            </div>
+        )}
+
+        <div className="action-buttons">
+            <button 
+            onClick={() => handleButtonAction('dislike')}
+            className="action-button dislike"
+            >
+            <span>✕</span>
+            </button>
+            
+            <button 
+            onClick={() => handleButtonAction('reset')}
+            className="action-button reset"
+            >
+            <span>↺</span>
+            </button>
+
+            {/* add the saving to closet one here */}
+            <button 
+            className="action-button share"
+            >
+            <span>→</span>
+            </button>
+            
+            <button 
+            onClick={() => handleButtonAction('like')}
+            className="action-button like"
+            >
+            <span>♥</span>
+            </button>
         </div>
-      ) : error ? (
-        <div className="error-message">Error: {error}</div>
-      ) : (
-        <div className="card-container">
-          <div className="card-grid">
-            {getSelectedProducts().map((product, index) => (
-              <div 
-                key={product.id}
-                ref={el => cardRefs.current[product.id] = el}
-                className="product-card"
-                onTouchStart={e => handleTouchStart(e, product.id)}
-                onTouchMove={e => handleTouchMove(e, product.id)}
-                onTouchEnd={e => handleTouchEnd(e, product.id)}
-                style={{ touchAction: 'pan-y' }}
-              >
-                <div className="dislike-overlay"></div>
-                <div className="like-overlay"></div>
-
-                <div className="product-image">
-                  <img 
-                    src={product.imageUrl || '/api/placeholder/400/320'} 
-                    alt={`${product.name} image`}
-                  />
-                </div>
-                
-                <div className="product-info">
-                  <p className="brand">{product.brand || 'Brand'}</p>
-                  <h3 className="name">{product.name || 'Product Name'}</h3>
-                  <p className="price">{product.price || '$0.00'}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-      )}
-
-      <div className="action-buttons">
-        <button 
-          onClick={() => handleButtonAction('dislike')}
-          className="action-button dislike"
-        >
-          <span>✕</span>
-        </button>
-        
-        <button 
-          onClick={() => handleButtonAction('reset')}
-          className="action-button reset"
-        >
-          <span>↺</span>
-        </button>
-        
-        <button 
-          className="action-button share"
-        >
-          <span>→</span>
-        </button>
-        
-        <button 
-          onClick={() => handleButtonAction('like')}
-          className="action-button like"
-        >
-          <span>♥</span>
-        </button>
-      </div>
-    </div>
+        </div>
   );
 };
 
