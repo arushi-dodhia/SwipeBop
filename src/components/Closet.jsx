@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Outfit from "./Outfit";
 import Footer from "./Footer";
+import "../login.css";
 import "./Swipe.css";
 
 const styles = {
@@ -136,7 +137,7 @@ const Closet = () => {
         setIsLoggedIn(user);
         setUserID(user.username);
 
-        if(user.username) {
+        if (user.username) {
           await fetchOutfits(user.username);
         }
       } catch (error) {
@@ -152,84 +153,156 @@ const Closet = () => {
       const response = await fetch(
         `http://18.118.186.108:5000/swipebop/outfits/${userID}`
       );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
       const data = await response.json();
       setOutfits(data);
     } catch (error) {
-      console.error("Error fetching outfits:", error);
-    }
-
-  }
-
-  const removeOutfit = async (outfitId) => {
-    try {
-      const res = await fetch('http://18.118.186.108:5000/swipebop/outfits/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          user_id: userID,
-          outfit_id: outfitId }),
-      });
-      if (res.ok) {
-        const result = await res.json();
-        alert("Outfit removed successfully!");
-        fetchOutfits(userID);
-        console.log(result);
-      } else {
-        const error = await res.json();
-        alert(`Failed to remove outfit: ${error.error}`);
-        console.error(error);
-      }
-    }  catch (error) {
-      console.error("Error removing outfit:", error);
       alert("Error removing outfit. Please try again later.");
     }
   };
 
+  const removeOutfit = async (outfitId) => {
+    try {
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/outfits/delete",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            outfit_id: outfitId,
+          }),
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        alert("Outfit removed successfully!");
+        fetchOutfits(userID);
+      } else {
+        const error = await res.json();
+        console.error(error);
+      }
+    } catch (error) {
+      alert("Error removing outfit. Please try again later.");
+    }
+  };
+
+  const clearCloset = async () => {
+    try {
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/outfits/delete_all",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+          }),
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        alert("Closet cleared successfully!");
+        fetchOutfits(userID);
+      } else {
+        const error = await res.json();
+        alert(`Failed to clear closet: ${error.error}`);
+      }
+    } catch (error) {
+      alert("Error clearing closet. Please try again later.");
+    }
+  };
+
   return (
-    <>
-      <div style={styles.container}>
-        <Navbar />
-        <section style={styles.hero}>
-          <h1 style={{ ...styles.h1, color: "#DB3B14", fontStyle: "italic", fontSize: "5rem" }}>
-            swipebop closet
-          </h1>
-          {isLoggedIn ? (
-            <>
+    <div
+      style={{
+        ...styles.container,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
+      <Navbar />
+      <section style={{ ...styles.hero, flex: 1 }}>
+        <h1
+          style={{
+            ...styles.h1,
+            color: "#DB3B14",
+            fontStyle: "italic",
+            fontSize: "5rem",
+          }}
+        >
+          swipebop closet
+        </h1>
+        {isLoggedIn ? (
+          <>
+            <div
+              style={{
+                maxWidth: "1000px",
+                margin: "0 auto",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "1rem 2rem",
+              }}
+            >
               <h1 style={{ ...styles.h1, color: "#DB3B14" }}>Outfits</h1>
-              {outfits == null ? (
-                <div className="loading-container">
-                  <p>Loading products...</p>
-                </div>
-              ) : (
-                <>
-                  {console.log(outfits)}
-                  <Outfit outfits={outfits.outfits} onRemove={removeOutfit}/>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <h1 style={{ ...styles.h1, color: "#DB3B14" }}>
-                Login / Signup to View Liked Outfits.
-              </h1>
-              <br />
               <button
-                style={{ ...styles.button, marginRight: "10px" }}
-                onClick={() => navigate("/login")}
+                style={{
+                  ...styles.button,
+                  background:
+                    outfits && outfits.outfits && outfits.outfits.length > 0
+                      ? "#DB3B14"
+                      : "#ccc",
+                  cursor:
+                    outfits && outfits.outfits && outfits.outfits.length > 0
+                      ? "pointer"
+                      : "not-allowed",
+                }}
+                onClick={() => clearCloset()}
+                disabled={
+                  !outfits || !outfits.outfits || outfits.outfits.length === 0
+                }
               >
-                Login
+                Clear Closet
               </button>
-              <button style={styles.button} onClick={() => navigate("/signup")}>
-                Signup
-              </button>
-            </>
-          )}
-        </section>
-      </div>
+            </div>
+
+            {outfits == null ? (
+              <div className="loading-container">
+                <p>Loading products...</p>
+              </div>
+            ) : (
+              <>
+                <Outfit outfits={outfits.outfits} onRemove={removeOutfit} />
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <h1 style={{ ...styles.h1, color: "#DB3B14" }}>
+              Login / Signup to View Liked Outfits.
+            </h1>
+            <br />
+            <button
+              style={{ ...styles.button, marginRight: "10px" }}
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+            <button style={styles.button} onClick={() => navigate("/signup")}>
+              Signup
+            </button>
+          </>
+        )}
+      </section>
       <Footer />
-    </>
+    </div>
   );
 };
 
