@@ -9,7 +9,7 @@ table = dynamodb.Table(table_name)
 
 def insert_item(user_id, product):
     product_id = product['productSin']
-    time = datetime.datetime.now.time()
+    time = datetime.now().isoformat()
 
     try:
         table.put_item(

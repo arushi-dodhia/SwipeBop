@@ -261,10 +261,46 @@ const SwipeBop = () => {
     });
   };
 
-  const handleDislike = (productId) => {
+  const handleDislike = async(productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
 
+    const outfits = getSelectedProducts();
+    const item = outfits.find((product) => product.id == productId);
+    if (!item) {
+      alert("Product not found, Please try again later");
+      return;
+    }
+    const product = {
+      productSin: item.id, 
+      imageUrl: item.imageUrl,
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      category: item.category,
+    };
+
+    try {
+      const res = await fetch("http://18.118.186.108:5000/swipebop/discard/insert", { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+          product: product,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Discarded product:", result);
+      } else {
+        const error = await res.json();
+        console.error("Error discarding product:", error);
+      }
+    } catch (error) {
+      console.error("Error discarding product:", error);
+    }
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(-1000px) rotate(-30deg)";
     setTimeout(() => removeCard(productId), 300);
@@ -280,9 +316,45 @@ const SwipeBop = () => {
   //   card.querySelector(".dislike-overlay").style.opacity = 0;
   // };
 
-  const handleLike = (productId) => {
+  const handleLike = async(productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
+    const outfits = getSelectedProducts();
+    const item = outfits.find((product) => product.id == productId);
+    if (!item) {
+      alert("Product not found, Please try again later");
+      return;
+    }
+    const product = {
+      productSin: item.id, 
+      imageUrl: item.imageUrl,
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      category: item.category,
+    };
+
+    try {
+      const res = await fetch("http://18.118.186.108:5000/swipebop/liked/insert", { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+          product: product,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Liked product:", result);
+      } else {
+        const error = await res.json();
+        console.error("Error liking product:", error);
+      }
+    } catch (error) {
+      console.error("Error liking product:", error);
+    }
 
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(1000px) rotate(30deg)";
@@ -296,7 +368,7 @@ const SwipeBop = () => {
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(1000px) rotate(30deg)";
     setTimeout(() => removeCard(productId), 300);
-  };  
+  };
 
   const handleButtonAction = (action) => {
     // Get all product ids
