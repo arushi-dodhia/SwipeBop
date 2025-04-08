@@ -41,21 +41,22 @@ def check_connectivity():
         print("Error connecting to DynamoDB:", e)
 
 # User likes an item
-def likeItem(user_id, product_id):
-    timestamp = int(time.time())
-    product_details = fetch_product_details(product_id)
-    product_details = convert_floats_to_decimal(product_details)
+def likeItem(user_id, product):
+    time = datetime.now().isoformat()
+    product_id = product['productSin']
 
-    table.put_item(
-        Item = {
-            'user_id': user_id,
-            'product_id': product_id,
-            'timestamp': timestamp,
-            'product_details': product_details
-        }
-    )
-    print(f"{user_id} added {product_id} to their liked items list")
-    return {"message": f"{user_id} added {product_id} to their liked items list"}
+    try:
+        table.put_item(
+            Item = {
+                'user_id': user_id,
+                'product_id': product_id,
+                'time': time,
+                'product': product
+            }
+        )
+        return time
+    except ClientError as e:
+        raise Exception(f"Unable to insert item: {e.response['Error']['Message']}")
 
 # Get all items liked by a user
 def getLikedItems(user_id):
@@ -63,30 +64,23 @@ def getLikedItems(user_id):
         response = table.query(
             KeyConditionExpression = Key('user_id').eq(user_id)
         )
-        count = len(response.get('Items', []))
-        if response:
-            print(f"Total items like by {user_id}: {count}")
-            #print(f"Item(s) liked by user {user_id}: ", response)
-        else:
-            print("Item(s) not found")
         return response.get('Items', [])
-    
     except ClientError as e:
         raise Exception(f"Query failed: {e.response['Error']['Message']}")
+    
 
 # Check for item liked by the user
 def getLikedItem(user_id, product_id):
-    response = table.get_item(
-        Key = {
-            'user_id': user_id,
-            'product_id': product_id
-        }
-    )
-    item = response.get("Item")
-    if item:
-        print(f"Item(s) liked by user {user_id}: ", item)
-    else:
-        print("Item(s) not found")
+    try:
+        response = table.get_item(
+            Key={
+                'user_id': user_id,
+                'product_id': product_id
+            }
+        )
+        return response.get('Item')
+    except ClientError as e:
+        raise Exception(f"Get item failed: {e.response['Error']['Message']}")
 
 # Remove an item liked by the user
 def removeLikedItem(user_id, product_id):

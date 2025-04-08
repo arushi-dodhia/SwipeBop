@@ -20,6 +20,7 @@ def insert_item(user_id, product):
                 'product': product
             }
         )
+        return time
     except ClientError as e:
         raise Exception(f"Unable to insert item: {e.response['Error']['Message']}")
 
