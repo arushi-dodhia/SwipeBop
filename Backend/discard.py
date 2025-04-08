@@ -9,7 +9,7 @@ table = dynamodb.Table(table_name)
 
 def insert_item(user_id, product):
     product_id = product['productSin']
-    time = datetime.datetime.now.time()
+    time = datetime.now().isoformat()
 
     try:
         table.put_item(
@@ -20,6 +20,7 @@ def insert_item(user_id, product):
                 'product': product
             }
         )
+        return time
     except ClientError as e:
         raise Exception(f"Unable to insert item: {e.response['Error']['Message']}")
 
