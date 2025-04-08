@@ -1,9 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Modal } from "react-bootstrap";
 import { getCurrentUser } from "@aws-amplify/auth";
 import "./Swipe.css";
+import "../login.css";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Item from "./Item";
+
+const styles = {
+  button: {
+    background: "#DB3B14",
+    color: "white",
+    padding: "0.8rem 2rem",
+    border: "none",
+    borderRadius: "40px",
+    cursor: "pointer",
+  },
+};
 
 const SwipeBop = () => {
   const [products, setProducts] = useState({
@@ -22,6 +36,11 @@ const SwipeBop = () => {
   const SWIPE_THRESHOLD = 100;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userID, setUserID] = useState(null);
+  const [likedProducts, setLikedProducts] = useState([]);
+  const [discardedProducts, setDiscardedProducts] = useState([]);
+  const [likedModal, setLikedModal] = useState(false);
+  const [discardedModal, setDiscardedModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -261,7 +280,7 @@ const SwipeBop = () => {
     });
   };
 
-  const handleDislike = async(productId) => {
+  const handleDislike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
 
@@ -272,7 +291,7 @@ const SwipeBop = () => {
       return;
     }
     const product = {
-      productSin: item.id, 
+      productSin: item.id,
       imageUrl: item.imageUrl,
       name: item.name,
       brand: item.brand,
@@ -281,16 +300,19 @@ const SwipeBop = () => {
     };
 
     try {
-      const res = await fetch("http://18.118.186.108:5000/swipebop/discard/insert", { 
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userID,
-          product: product,
-        }),
-      });
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/discard/insert",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product: product,
+          }),
+        }
+      );
       if (res.ok) {
         const result = await res.json();
         console.log("Discarded product:", result);
@@ -316,7 +338,7 @@ const SwipeBop = () => {
   //   card.querySelector(".dislike-overlay").style.opacity = 0;
   // };
 
-  const handleLike = async(productId) => {
+  const handleLike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
     const outfits = getSelectedProducts();
@@ -326,7 +348,7 @@ const SwipeBop = () => {
       return;
     }
     const product = {
-      productSin: item.id, 
+      productSin: item.id,
       imageUrl: item.imageUrl,
       name: item.name,
       brand: item.brand,
@@ -335,16 +357,19 @@ const SwipeBop = () => {
     };
 
     try {
-      const res = await fetch("http://18.118.186.108:5000/swipebop/liked/insert", { 
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userID,
-          product: product,
-        }),
-      });
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/liked/insert",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product: product,
+          }),
+        }
+      );
       if (res.ok) {
         const result = await res.json();
         console.log("Liked product:", result);
@@ -412,6 +437,60 @@ const SwipeBop = () => {
     });
 
     return selectedProducts;
+  };
+
+  const fetchLikedProducts = async () => {
+    try {
+      const res = await fetch(
+        `http://18.118.186.108:5000/swipebop/liked/${userID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        setLikedProducts(result);
+        console.log("Liked products:", likedProducts);
+        setLikedModal(true);
+      } else {
+        const error = await res.json();
+        console.error("Error fetching liked products:", error);
+        alert("Failed to fetch liked products");
+      }
+    } catch (error) {
+      console.error("Error fetching liked products:", error);
+      alert("Error fetching liked products. Please try again.");
+    }
+  };
+
+  const fetchDiscardedProducts = async () => {
+    try {
+      const res = await fetch(
+        `http://18.118.186.108:5000/swipebop/discard/${userID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Discarded products:", result);
+        setDiscardedProducts(result);
+        setDiscardedModal(true);
+      } else {
+        const error = await res.json();
+        console.error("Error fetching discarded products:", error);
+        alert("Failed to fetch discarded products");
+      }
+    } catch (error) {
+      console.error("Error fetching discarded products:", error);
+      alert("Error fetching discarded products. Please try again.");
+    }
   };
 
   const handleSaveOutfit = async () => {
@@ -506,7 +585,7 @@ const SwipeBop = () => {
 
         <div className="action-buttons">
           <button
-            onClick={() => handleButtonAction("dislike")}
+            onClick={() => fetchDiscardedProducts()}
             className="action-button dislike"
           >
             <span>✕</span>
@@ -520,13 +599,107 @@ const SwipeBop = () => {
           </button>
 
           <button
-            onClick={() => handleButtonAction("like")}
+            onClick={() => fetchLikedProducts()}
             className="action-button like"
           >
             <span>♥</span>
           </button>
         </div>
       </div>
+      <Modal
+        show={likedModal}
+        onHide={() => setLikedModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Liked Items</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="horizontal-scroll-container">
+            {likedProducts.items && likedProducts.items.length > 0 ? (
+              likedProducts.items.map((item, idx) => (
+                <div key={idx} className="scroll-item-card">
+                  <img src={item.product.imageUrl} alt={item.product.name} />
+                  <h5>{item.product.name}</h5>
+                  <p>{item.product.brand}</p>
+                  <p>{item.product.price}</p>
+                </div>
+              ))
+            ) : (
+              <div>
+                {isLoggedIn ? (
+                  <p>No liked items to show.</p>
+                ) : (
+                  <>
+                    <p>Please Login / Register to see your liked items.</p>
+                    <button
+                      style={{ ...styles.button, marginRight: "10px" }}
+                      onClick={() => navigate("/login")}
+                    >
+                      Login
+                    </button>
+                    <button
+                      style={styles.button}
+                      onClick={() => navigate("/signup")}
+                    >
+                      Signup
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={discardedModal}
+        onHide={() => setDiscardedModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Discarded Items</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="horizontal-scroll-container">
+            {discardedProducts.items && discardedProducts.items.length > 0 ? (
+              discardedProducts.items.map((item, idx) => (
+                <div key={idx} className="scroll-item-card">
+                  <img src={item.product.imageUrl} alt={item.product.name} />
+                  <h5>{item.product.name}</h5>
+                  <p>{item.product.brand}</p>
+                  <p>{item.product.price}</p>
+                </div>
+              ))
+            ) : (
+              <div>
+                {isLoggedIn ? (
+                  <p>No discarded items to show.</p>
+                ) : (
+                  <>
+                    <p>Please Login / Register to see your discarded items.</p>
+                    <button
+                      style={{ ...styles.button, marginRight: "10px" }}
+                      onClick={() => navigate("/login")}
+                    >
+                      Login
+                    </button>
+                    <button
+                      style={styles.button}
+                      onClick={() => navigate("/signup")}
+                    >
+                      Signup
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </Modal.Body>
+      </Modal>
+
       <Footer />
     </div>
   );
