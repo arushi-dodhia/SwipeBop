@@ -493,6 +493,86 @@ const SwipeBop = () => {
     }
   };
 
+  const removeFromLiked = async (productId) => {
+    console.log(userID, productId);
+    try {
+      const res = await fetch("http://18.118.186.108:5000/swipebop/liked/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+          product_id: productId,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setLikedProducts((prev) => ({
+          ...prev,
+          items: prev.items.filter((item) => item.product.id !== productId),
+        }));
+        fetchLikedProducts();
+      } else {
+        const error = await res.json();
+        console.error("Error removing from liked products:", error);
+        alert("Failed to remove from liked products");
+      }
+    } catch (error) {
+      console.error("Error removing from liked products:", error);
+      alert("Error removing from liked products. Please try again.");
+    }
+  };
+
+  const removeFromDiscard = async (productId) => {
+    try {
+      const res = await fetch("http://18.118.186.108:5000/swipebop/discard/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+          product_id: productId,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setDiscardedProducts((prev) => ({
+          ...prev,
+          items: prev.items.filter((item) => item.product.id !== productId),
+        }));
+        fetchDiscardedProducts();
+      } else {
+        const error = await res.json();
+        console.error("Error removing from discarded products:", error);
+        alert("Failed to remove from discarded products");
+      }
+    } catch (error) {
+      console.error("Error removing from discarded products:", error);
+      alert("Error removing from discarded products. Please try again.");
+    }
+  };
+
+  const restoreItem = (product, productId, liked) => {
+    const restoredProduct = { ...product, id: productId };
+    console.log("Restored product:", restoredProduct);
+  
+    setProducts((prevProducts) => {
+      const updatedProducts = { ...prevProducts };
+      const categoryProducts = updatedProducts[restoredProduct.category];
+      categoryProducts.unshift({ ...restoredProduct, hidden: false });
+      return updatedProducts;
+    });
+  
+    if (liked) {
+      removeFromLiked(productId);
+    } else {
+      removeFromDiscard(productId);
+    }
+  };
+    
+
   const handleSaveOutfit = async () => {
     if (!isLoggedIn) {
       alert("Please log in to save outfits.");
@@ -619,11 +699,52 @@ const SwipeBop = () => {
           <div className="horizontal-scroll-container">
             {likedProducts.items && likedProducts.items.length > 0 ? (
               likedProducts.items.map((item, idx) => (
-                <div key={idx} className="scroll-item-card">
-                  <img src={item.product.imageUrl} alt={item.product.name} />
-                  <h5>{item.product.name}</h5>
-                  <p>{item.product.brand}</p>
-                  <p>{item.product.price}</p>
+                <div key={idx}>
+                  <div className="scroll-item-card">
+                    <img src={item.product.imageUrl} alt={item.product.name} />
+                    <h5>{item.product.name}</h5>
+                    <p>{item.product.brand}</p>
+                    <p>{item.product.price}</p>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <button
+                        style={{
+                          backgroundColor: "transparent",
+                          color: "#DB3B14",
+                          border: "1px solid #DB3B14",
+                          borderRadius: "20px",
+                          padding: "5px 10px",
+                          fontSize: "0.8rem",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                          flex: 1,
+                        }}
+                        onClick={() => removeFromLiked(item.product_id)}
+                      >
+                        Remove
+                      </button>
+                      <button
+                        style={{
+                          backgroundColor: "#DB3B14",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "20px",
+                          padding: "5px 10px",
+                          fontSize: "0.8rem",
+                          cursor: "pointer",
+                          flex: 1,
+                        }}
+                        onClick={() => restoreItem(item.product, item.product_id, true)}
+                      >
+                        Restore
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))
             ) : (
@@ -671,6 +792,45 @@ const SwipeBop = () => {
                   <h5>{item.product.name}</h5>
                   <p>{item.product.brand}</p>
                   <p>{item.product.price}</p>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <button
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "#DB3B14",
+                        border: "1px solid #DB3B14",
+                        borderRadius: "20px",
+                        padding: "5px 10px",
+                        fontSize: "0.8rem",
+                        cursor: "pointer",
+                        marginRight: "10px",
+                        flex: 1,
+                      }}
+                      onClick={() => removeFromDiscard(item.product_id)}
+                    >
+                      Remove
+                    </button>
+                    <button
+                      style={{
+                        backgroundColor: "#DB3B14",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "20px",
+                        padding: "5px 10px",
+                        fontSize: "0.8rem",
+                        cursor: "pointer",
+                        flex: 1,
+                      }}
+                      onClick={() => restoreItem(item.product, item.product_id, false)}
+                    >
+                      Restore
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
