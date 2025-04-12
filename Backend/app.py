@@ -459,7 +459,7 @@ def deleteLiked():
     product_id = data.get('product_id')
 
     if not user_id or not product_id:
-        return jsonify({"error": "Missing user_id or time"}), 400
+        return jsonify({"error": "Missing user_id or product_id"}), 400
 
     try:
         liked.removeLikedItem(user_id, product_id)
