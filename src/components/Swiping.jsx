@@ -496,16 +496,19 @@ const SwipeBop = () => {
   const removeFromLiked = async (productId) => {
     console.log(userID, productId);
     try {
-      const res = await fetch("http://18.118.186.108:5000/swipebop/liked/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userID,
-          product_id: productId,
-        }),
-      });
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/liked/delete",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product_id: productId,
+          }),
+        }
+      );
       if (res.ok) {
         const result = await res.json();
         setLikedProducts((prev) => ({
@@ -526,16 +529,19 @@ const SwipeBop = () => {
 
   const removeFromDiscard = async (productId) => {
     try {
-      const res = await fetch("http://18.118.186.108:5000/swipebop/discard/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userID,
-          product_id: productId,
-        }),
-      });
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/discard/delete",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product_id: productId,
+          }),
+        }
+      );
       if (res.ok) {
         const result = await res.json();
         setDiscardedProducts((prev) => ({
@@ -557,21 +563,20 @@ const SwipeBop = () => {
   const restoreItem = (product, productId, liked) => {
     const restoredProduct = { ...product, id: productId };
     console.log("Restored product:", restoredProduct);
-  
+
     setProducts((prevProducts) => {
       const updatedProducts = { ...prevProducts };
       const categoryProducts = updatedProducts[restoredProduct.category];
       categoryProducts.unshift({ ...restoredProduct, hidden: false });
       return updatedProducts;
     });
-  
+
     if (liked) {
       removeFromLiked(productId);
     } else {
       removeFromDiscard(productId);
     }
   };
-    
 
   const handleSaveOutfit = async () => {
     if (!isLoggedIn) {
@@ -615,6 +620,66 @@ const SwipeBop = () => {
     }
   };
 
+  const handleDiscardOutfit = async () => {
+    const products = getSelectedProducts();
+
+    for (let i = 0; i < products.length; i++) {
+      handleDislike(products[i].id);
+    }
+    return;
+  };
+
+  const clearLiked = async () => {
+    try {
+      const res = await fetch("http://18.118.186.108:5000//swipebop/liked/delete_all", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Cleared liked products:", result);
+        setLikedProducts({ items: [] });
+      } else {
+        const error = await res.json();
+        console.error("Error clearing liked products:", error);
+      }
+    }
+    catch (error) {
+      console.error("Error clearing liked products:", error);
+      alert("Error clearing liked products. Please try again.");
+    }
+  };
+
+  const clearDisliked = async () => {
+    try {
+      const res = await fetch("http://18.118.186.108:5000//swipebop/discarded/delete_all", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Cleared discarded products:", result);
+        setDiscardedProducts({ items: [] });
+      } else {
+        const error = await res.json();
+        console.error("Error clearing discarded products:", error);
+      }
+    } catch (error) {
+      console.error("Error clearing discarded products:", error);
+      alert("Error clearing discarded products. Please try again.");
+    }
+  };
+  
   return (
     <div>
       <Navbar />
@@ -665,7 +730,7 @@ const SwipeBop = () => {
 
         <div className="action-buttons">
           <button
-            onClick={() => fetchDiscardedProducts()}
+            onClick={() => handleDiscardOutfit()}
             className="action-button dislike"
           >
             <span>✕</span>
@@ -677,12 +742,44 @@ const SwipeBop = () => {
           >
             <span>→</span>
           </button>
-
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "10px",
+          }}
+        >
           <button
-            onClick={() => fetchLikedProducts()}
-            className="action-button like"
+            style={{
+              backgroundColor: "transparent",
+              color: "#DB3B14",
+              border: "1px solid #DB3B14",
+              borderRadius: "20px",
+              padding: "5px 10px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+              marginRight: "10px",
+              flex: 1,
+            }}
+            onClick={() => fetchDiscardedProducts()}
           >
-            <span>♥</span>
+            Discard Pile
+          </button>
+          <button
+            style={{
+              backgroundColor: "#DB3B14",
+              color: "white",
+              border: "none",
+              borderRadius: "20px",
+              padding: "5px 10px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+              flex: 1,
+            }}
+            onClick={() => fetchLikedProducts()}
+          >
+            Liked Wishlist
           </button>
         </div>
       </div>
@@ -696,6 +793,55 @@ const SwipeBop = () => {
           <Modal.Title>Liked Items</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+        <button
+            style={{
+              backgroundColor:
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+                  ? "#DB3B14"
+                  : "#ccc",
+              color: "white",
+              padding: "0.8rem 1.5rem",
+              border: "none",
+              borderRadius: "20px",
+              cursor:
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+                  ? "pointer"
+                  : "not-allowed",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              transition: "background-color 0.3s ease, transform 0.2s ease",
+              boxShadow:
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+                  ? "0px 4px 6px rgba(0, 0, 0, 0.1)"
+                  : "none",
+            }}
+            onClick={() => clearLiked()}
+            disabled={
+              !likedProducts ||
+              !likedProducts.items ||
+              likedProducts.items.length === 0
+            }
+            onMouseEnter={(e) => {
+              if (
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+              ) {
+                e.target.style.transform = "scale(1.05)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+            }}
+          >
+            Clear
+          </button>
           <div className="horizontal-scroll-container">
             {likedProducts.items && likedProducts.items.length > 0 ? (
               likedProducts.items.map((item, idx) => (
@@ -739,7 +885,9 @@ const SwipeBop = () => {
                           cursor: "pointer",
                           flex: 1,
                         }}
-                        onClick={() => restoreItem(item.product, item.product_id, true)}
+                        onClick={() =>
+                          restoreItem(item.product, item.product_id, true)
+                        }
                       >
                         Restore
                       </button>
@@ -784,6 +932,55 @@ const SwipeBop = () => {
           <Modal.Title>Discarded Items</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+        <button
+            style={{
+              backgroundColor:
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+                  ? "#DB3B14"
+                  : "#ccc",
+              color: "white",
+              padding: "0.8rem 1.5rem",
+              border: "none",
+              borderRadius: "20px",
+              cursor:
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+                  ? "pointer"
+                  : "not-allowed",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              transition: "background-color 0.3s ease, transform 0.2s ease",
+              boxShadow:
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+                  ? "0px 4px 6px rgba(0, 0, 0, 0.1)"
+                  : "none",
+            }}
+            onClick={() => clearDisliked()}
+            disabled={
+              !discardedProducts ||
+              !discardedProducts.items ||
+              discardedProducts.items.length === 0
+            }
+            onMouseEnter={(e) => {
+              if (
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+              ) {
+                e.target.style.transform = "scale(1.05)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+            }}
+          >
+            Clear
+          </button>
           <div className="horizontal-scroll-container">
             {discardedProducts.items && discardedProducts.items.length > 0 ? (
               discardedProducts.items.map((item, idx) => (
@@ -826,7 +1023,9 @@ const SwipeBop = () => {
                         cursor: "pointer",
                         flex: 1,
                       }}
-                      onClick={() => restoreItem(item.product, item.product_id, false)}
+                      onClick={() =>
+                        restoreItem(item.product, item.product_id, false)
+                      }
                     >
                       Restore
                     </button>
