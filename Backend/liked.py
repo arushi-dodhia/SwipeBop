@@ -93,6 +93,20 @@ def removeLikedItem(user_id, product_id):
         )
     except ClientError as e:
         raise Exception(f"Delete failed: {e.response['Error']['Message']}")
+    
+def removeAllLiked(user_id):
+    try:
+        items = getLikedItems(user_id)
+        for item in items:
+            product_id = item['product_id']
+            table.delete_item(
+                Key={
+                    'user_id': user_id,
+                    'product_id': product_id
+                }
+            )
+    except ClientError as e:
+        raise Exception(f"Delete failed: {e.response['Error']['Message']}")
 
 # Add an item and check for item
 # likeItem("200", "1521306412")

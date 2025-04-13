@@ -355,6 +355,20 @@ def delete_discarded():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/swipebop/discard/delete_all', methods=['POST'])
+def delete_all_discarded():
+    data = request.json
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    try:
+        discard.remove_all_items(user_id)
+        return jsonify({"status": "All discarded items removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/swipebop/outfits/insert', methods=['POST'])
 def insert_outfit():
     data = request.json
@@ -470,3 +484,16 @@ def deleteLiked():
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
 
+@app.route('/swipebop/liked/delete_all', methods=['POST'])
+def delete_all_liked():
+    data = request.json
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    try:
+        liked.removeAllLiked(user_id)
+        return jsonify({"status": "All liked items removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
