@@ -112,7 +112,7 @@ def search_products_filtered():
     sort = request.args.get("sort", "ratings")
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -155,7 +155,7 @@ def search_products():
     sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -210,7 +210,7 @@ def browse_by_category():
     sort = request.args.get("sort", "ratings") # default sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     q = request.args.get("q", "shirts")
     offset = request.args.get("offset", "0")
@@ -265,7 +265,7 @@ def get_images():
     sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
