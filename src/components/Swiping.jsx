@@ -657,7 +657,7 @@ const SwipeBop = () => {
 
   const clearDisliked = async () => {
     try {
-      const res = await fetch("http://18.118.186.108:5000//swipebop/discarded/delete_all", {
+      const res = await fetch("http://18.118.186.108:5000//swipebop/discard/delete_all", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
