@@ -157,7 +157,10 @@ const Closet = () => {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setOutfits(data);
+      const outfits = data.outfits.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
+      setOutfits({outfits: outfits});
     } catch (error) {
       alert("Error removing outfit. Please try again later.");
     }

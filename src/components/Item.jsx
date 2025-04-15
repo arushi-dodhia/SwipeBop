@@ -9,10 +9,9 @@ const Item = forwardRef(({
   className, 
   style,
   productId,
-  handleDislike, 
-  handleReset,
-  handleShare,
-  handleLike
+  handleDislike,
+  handleLike,
+  isLoggedIn,
 }, ref) => {
   const [showModal, setShowModal] = useState(false);
   
@@ -61,18 +60,25 @@ const Item = forwardRef(({
   });
 
   const onDislike = () => {
+    if (!isLoggedIn) {
+      alert("Please log in to discard item.");
+      return;
+    }
     handleDislike(productId);
   };
 
-  const onReset = () => {
-    handleReset(productId);
-  };
-
-  const onShare = () => {
-    handleShare(productId);
-  };
+  // const onShare = () => {
+  //   if (!isLoggedIn) {
+  //     alert("Please log in to save item to closet.");
+  //     return;
+  //   }
+  // };
 
   const onLike = () => {
+    if (!isLoggedIn) {
+      alert("Please log in to like item.");
+      return;
+    }
     handleLike(productId);
   };
   
@@ -111,14 +117,14 @@ const Item = forwardRef(({
             >
               <span>✕</span> 
             </Button>
-            
+{/*             
             <Button 
               variant="info" 
               className="action-button share"
               onClick={onShare}
             >
               <span>→</span>
-            </Button>
+            </Button> */}
             
             <Button 
               variant="success" 
@@ -128,9 +134,6 @@ const Item = forwardRef(({
               <span>♥</span>
             </Button>
           </div>
-          
-          <Button variant="outline-secondary" className="mt-3" onClick={handleClose}>
-          </Button>
         </Modal.Body>
       </Modal>
     </>

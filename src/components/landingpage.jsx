@@ -26,7 +26,6 @@ const styles = {
     backgroundPosition: "center",
     height: "100vh",
     overflow: "hidden",
-
   },
   noiseOverlay: {
     position: "relative",
@@ -60,8 +59,7 @@ const styles = {
   h1: {
     fontWeight: 'light-bold',
     marginBottom: '1rem',
-    color: "white"
-
+    color: "white",
   },
   subtitle: {
     fontSize: '1.2rem',
@@ -75,6 +73,7 @@ const styles = {
     border: 'none',
     borderRadius: '40px',
     cursor: 'pointer',
+    fontSize: '1rem',
   },
   section: {
     padding: '4rem 0',
@@ -83,6 +82,7 @@ const styles = {
     color: '#DB3B14',
     fontSize: '2.5rem',
     marginBottom: '2rem',
+    textAlign: 'center',
   },
   textLarge: {
     fontSize: '1.2rem',
@@ -95,7 +95,6 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '2rem',
-    margin: '2rem 0',
   },
   statsBox: {
     marginBottom: '2rem',
@@ -115,6 +114,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '4px',
+    flexShrink: 0,
   },
   image: {
     maxWidth: '100%',
@@ -131,12 +131,14 @@ const styles = {
     justifyContent: 'center',
     gap: '2rem',
     marginBottom: '1rem',
+    flexWrap: 'wrap',
   },
   footerLink: {
     color: '#666',
     textDecoration: 'none',
   },
 };
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -144,7 +146,6 @@ const LandingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fallback image in case API fails
   const fallbackImage = "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop";
 
   const checkUser = async () => {
@@ -156,7 +157,7 @@ const LandingPage = () => {
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   useEffect(() => {
     checkUser();
@@ -175,14 +176,14 @@ const LandingPage = () => {
         lang: 'en-US',
         currency: 'USD',
         q: category,
-        limit: 10,  // Fetch multiple images
+        limit: 10,
         minPrice: 25,
         maxPrice: 500,
         siteId: 1006,
         allowOutOfStockItems: 'false',
         dept: 'WOMENS',
       });
-  
+
       const response = await fetch(`http://3.142.196.127:5000/swipebop/images?${queryParams}`, {
         method: 'GET',
         headers: {
@@ -191,17 +192,14 @@ const LandingPage = () => {
           'Client-Version': '1.0.0',
         },
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to fetch fashion images`);
       }
-  
+
       const data = await response.json();
-      console.log("API response data:", data);
-  
-      // Extract image URLs from the object
       const images = Object.values(data);
-  
+
       if (images.length > 1) {
         setProductImages(images);
         setImage1(images[0]);
@@ -210,7 +208,7 @@ const LandingPage = () => {
         setImage1(images[0] || fallbackImage);
         setImage2(fallbackImage);
       }
-  
+
       setError(null);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -222,20 +220,20 @@ const LandingPage = () => {
     }
   };
 
-  const handleLogout= async () => {
+  const handleLogout = async () => {
     try {
       await signOut();
       setIsLoggedIn(false);
     } catch (error) {
       console.error(error);
     }
-  }
-  
+  };
+
   return (
     <div style={styles.container}>
       <div>
         <MultiCenterGradient>
-        <Navbar />
+          <Navbar />
           <section style={styles.hero}>
             <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '5rem' }}>s w i p e b o p</h1>
             <p style={styles.subtitle}>
@@ -246,6 +244,7 @@ const LandingPage = () => {
           </section>
         </MultiCenterGradient>
       </div>
+
       <div style={styles.mainContainer}>
         <section style={styles.section}>
           <h2 style={styles.h2}>A New Way to Shop Fashion</h2>
@@ -262,15 +261,15 @@ const LandingPage = () => {
             </div>
             <div>
               {isLoading ? (
-                <div style={{...styles.image, display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <div style={{ ...styles.image, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   Loading fashion image...
                 </div>
               ) : (
                 <div style={styles.image}>
-                  <img 
-                    src={image2 || fallbackImage} 
-                    alt="Fashion item" 
-                    style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                  <img
+                    src={image1 || fallbackImage}
+                    alt="Fashion item"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => {
                       console.error('Image failed to load:', e.target.src);
                       e.target.src = fallbackImage;
@@ -298,16 +297,16 @@ const LandingPage = () => {
             </div>
             <div>
               <div style={styles.image}>
-                  <img 
-                    src={image1 || fallbackImage} 
-                    alt="Fashion item" 
-                    style={{width: '100%', height: '100%', objectFit: 'cover'}}
-                    onError={(e) => {
-                      console.error('Image failed to load:', e.target.src);
-                      e.target.src = fallbackImage;
-                    }}
-                  />
-                </div>
+                <img
+                  src={image2 || fallbackImage}
+                  alt="Fashion item"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    console.error('Image failed to load:', e.target.src);
+                    e.target.src = fallbackImage;
+                  }}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -315,11 +314,7 @@ const LandingPage = () => {
         <section style={styles.section}>
           <h2 style={styles.h2}>Visualize Your Outfits</h2>
           <p style={styles.textLarge}>SwipeBop lets you instantly visualize how pieces come together.</p>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris.
-          </p>
+          
         </section>
       </div>
 

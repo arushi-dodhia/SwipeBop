@@ -110,7 +110,7 @@ def search_products_filtered():
     sort = request.args.get("sort", "ratings")
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    # limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -153,7 +153,7 @@ def search_products():
     sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    # limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -208,7 +208,7 @@ def browse_by_category():
     sort = request.args.get("sort", "ratings") # default sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    # limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     q = request.args.get("q", "shirts")
     offset = request.args.get("offset", "0")
@@ -263,7 +263,7 @@ def get_images():
     sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    # limit = request.args.get("limit", "10")
+    limit = request.args.get("limit", "100")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -350,6 +350,20 @@ def delete_discarded():
     try:
         discard.remove_item(user_id, product_id)
         return jsonify({"status": "Item removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/swipebop/discard/delete_all', methods=['POST'])
+def delete_all_discarded():
+    data = request.json
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    try:
+        discard.remove_all_items(user_id)
+        return jsonify({"status": "All discarded items removed successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -457,7 +471,7 @@ def deleteLiked():
     product_id = data.get('product_id')
 
     if not user_id or not product_id:
-        return jsonify({"error": "Missing user_id or time"}), 400
+        return jsonify({"error": "Missing user_id or product_id"}), 400
 
     try:
         liked.removeLikedItem(user_id, product_id)
@@ -467,3 +481,17 @@ def deleteLiked():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
+
+@app.route('/swipebop/liked/delete_all', methods=['POST'])
+def delete_all_liked():
+    data = request.json
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    try:
+        liked.removeAllLiked(user_id)
+        return jsonify({"status": "All liked items removed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -9,7 +9,7 @@ table = dynamodb.Table(table_name)
 
 def insert_item(user_id, product):
     product_id = product['productSin']
-    time = datetime.datetime.now.time()
+    time = datetime.now().isoformat()
 
     try:
         table.put_item(
@@ -20,6 +20,7 @@ def insert_item(user_id, product):
                 'product': product
             }
         )
+        return time
     except ClientError as e:
         raise Exception(f"Unable to insert item: {e.response['Error']['Message']}")
 
@@ -52,5 +53,19 @@ def remove_item(user_id, product_id):
                 'product_id': product_id
             }
         )
+    except ClientError as e:
+        raise Exception(f"Delete failed: {e.response['Error']['Message']}")
+    
+def remove_all_items(user_id):
+    try:
+        items = get_items(user_id)
+        for item in items:
+            product_id = item['product_id']
+            table.delete_item(
+                Key={
+                    'user_id': user_id,
+                    'product_id': product_id
+                }
+            )
     except ClientError as e:
         raise Exception(f"Delete failed: {e.response['Error']['Message']}")

@@ -21,10 +21,12 @@ const Outfit = ({ outfits, onRemove }) => {
             {outfit.outfit.map((product) => (
               <div key={product.id} className="product-card-2">
                 <div className="product-image-2">
+                  <a href={product.url}>
                   <img
                     src={product.imageUrl}
                     alt={product.name}
                   />
+                  </a>
                 </div>
                 <div className="product-info-2">
                   <p className="brand-2">{product.brand}</p>
