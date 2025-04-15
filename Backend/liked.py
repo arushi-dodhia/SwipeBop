@@ -101,9 +101,9 @@ def removeLikedItem(user_id, product_id):
         raise Exception(f"Delete failed: {e.response['Error']['Message']}")
 
 # Add an item and check for item
-# likeItem("200", "1521306412")
+likeItem("fakeUser1", "1521306412")
 # likeItem("200", "1521306413")
 # likeItem("200", "1521306414")
 # getLikedItems("200")
 # getLikedItem("200", "1521306413")
-removeLikedItem("200", "1521306412")
+# removeLikedItem("200", "1521306412")

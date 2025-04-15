@@ -26,8 +26,6 @@ languages = ["en-US", "ru-RU", "zh-CN"]
 sort_terms = ["editors-pick", "exclusives",  "hearts",  "price-high-low",  "price-low-high", "ratings"]
 
 # need other default parameters for sanitizing
-
-
 cache = LFUCache(maxsize=10)
 def fetch_from_shopbop(url, params):
     cache_key = f"{url}-{tuple(sorted(params.items()))}"
@@ -53,8 +51,8 @@ def sanitize_data(params):
             params["minPrice"] = int(params["minPrice"])
         if params.get("maxPrice"):
             params["maxPrice"] = int(params["maxPrice"])
-        if params.get("limit"):
-            params["limit"] = int(params["limit"])
+        # if params.get("limit"):
+        #     params["limit"] = int(params["limit"])
         if params.get("offset"):
             params["offset"] = int(params["offset"])
     except ValueError:
@@ -112,7 +110,7 @@ def search_products_filtered():
     sort = request.args.get("sort", "ratings")
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    # limit = request.args.get("limit", "10")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -124,7 +122,7 @@ def search_products_filtered():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        "limit": limit,
+        # "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -155,7 +153,7 @@ def search_products():
     sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    # limit = request.args.get("limit", "10")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -167,7 +165,7 @@ def search_products():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        "limit": limit,
+        # "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -210,7 +208,7 @@ def browse_by_category():
     sort = request.args.get("sort", "ratings") # default sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    # limit = request.args.get("limit", "10")
     dept = request.args.get("dept", "WOMENS")
     q = request.args.get("q", "shirts")
     offset = request.args.get("offset", "0")
@@ -224,7 +222,7 @@ def browse_by_category():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        "limit": limit,
+        # "limit": limit,
         "dept": dept,
         "q": q,
         "offset": offset
@@ -265,7 +263,7 @@ def get_images():
     sort = request.args.get("sort", "ratings") # sort by ratings cuz we wanna get popular items????
     minPrice = request.args.get("minPrice", "0")
     maxPrice = request.args.get("maxPrice", "1000000")
-    limit = request.args.get("limit", "10")
+    # limit = request.args.get("limit", "10")
     dept = request.args.get("dept", "WOMENS")
     lang = request.args.get("lang", "en-US")
     offset = request.args.get("offset", "0")
@@ -277,7 +275,7 @@ def get_images():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        "limit": limit,
+        # "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -469,4 +467,3 @@ def deleteLiked():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
-
