@@ -86,9 +86,6 @@ const SwipeBop = () => {
                 return {
                   id,
                   imageUrl: product.imageUrl || product.image,
-                  name: product.name || "Product Name",
-                  brand: product.brand || "Brand Name",
-                  price: product.price || "$0.00",
                   category,
                 };
               } else {
@@ -133,13 +130,48 @@ const SwipeBop = () => {
 
   useEffect(() => {
     const fetchProductDetails = async () => {
+      // Only proceed if we have product IDs
       if (productIds.length === 0) return;
-
+  
       try {
-        const detailsData = {}; // Object to store details of each product
-
-        for (const productId of productIds) {
-          const response = await fetch(`http://18.118.186.108:5000/swipebop/search`, {
+        // Get currently visible products from all categories
+        const currentlyVisibleProducts = {
+          shirts: products.shirts.filter(p => !p.hidden),
+          pants: products.pants.filter(p => !p.hidden),
+          shoes: products.shoes.filter(p => !p.hidden),
+          accessories: products.accessories.filter(p => !p.hidden)
+        };
+  
+        // Log what we're trying to fetch
+        console.log("Attempting to fetch details for products:", currentlyVisibleProducts);
+  
+        // Process each category separately to ensure we get details for all
+        const categories = ["shirts", "pants", "shoes", "accessories"];
+        const detailsData = {};
+  
+        for (const category of categories) {
+          // Skip empty categories
+          if (currentlyVisibleProducts[category].length === 0) continue;
+          
+          // Get the first item from each category
+          const productToFetch = currentlyVisibleProducts[category][0];
+          
+          if (!productToFetch || !productToFetch.id) {
+            console.log(`No valid product found for category: ${category}`);
+            continue;
+          }
+          
+          console.log(`Fetching details for ${category} product:`, productToFetch.id);
+  
+          // Make individual requests for reliable results
+          const queryParams = new URLSearchParams({
+            q: category, // Use category as search term
+            limit: 20,   // Increase limit to ensure we find the product
+            lang: "en-US",
+            currency: "USD"
+          });
+  
+          const response = await fetch(`http://18.118.186.108:5000/swipebop/search?${queryParams}`, {
             method: 'GET',
             headers: {
               Accept: 'application/json',
@@ -147,24 +179,121 @@ const SwipeBop = () => {
               'Client-Version': '1.0.0',
             },
           });
-
+  
           if (!response.ok) {
-            throw new Error(`Failed to fetch product ${productId}`);
+            console.error(`Failed to fetch ${category} products`);
+            continue;
           }
-
+  
           const data = await response.json();
-          console.log(data);
-          detailsData[productId] = data; 
+          console.log(`${category} search results:`, data);
+          
+          // Look for our product in the results
+          if (data && data.products && Array.isArray(data.products)) {
+            // Try to find our product by ID
+            let foundProduct = null;
+            
+            // Search through all returned products
+            for (const item of data.products) {
+              if (item.product && item.product.productSin) {
+                const productSin = item.product.productSin;
+                
+                // Log to see what IDs we're finding
+                console.log(`Found product with ID ${productSin} in ${category} results`);
+                
+                if (productToFetch.id === productSin) {
+                  console.log(`Match found for ${category}!`);
+                  foundProduct = item.product;
+                  break;
+                }
+              }
+            }
+            
+            if (foundProduct) {
+              // Store the details for this product
+              detailsData[productToFetch.id] = {
+                name: foundProduct.shortDescription || "Product Name",
+                brand: foundProduct.designerName || "Brand Name",
+                price: foundProduct.lowPrice?.price || foundProduct.retailPrice?.price || "$0.00",
+                category: category
+              };
+            } else {
+              console.log(`No matching product found for ${category} with ID ${productToFetch.id}`);
+              
+              // As a fallback, use the first product from search results
+              if (data.products.length > 0 && data.products[0].product) {
+                const firstProduct = data.products[0].product;
+                
+                // Store the new product ID and details
+                const newProductId = firstProduct.productSin;
+                detailsData[newProductId] = {
+                  id: newProductId, // Include the new ID
+                  name: firstProduct.shortDescription || "Product Name",
+                  brand: firstProduct.designerName || "Brand Name",
+                  price: firstProduct.lowPrice?.price || firstProduct.retailPrice?.price || "$0.00",
+                  category: category,
+                  isReplacement: true // Flag that this is a replacement
+                };
+                
+                console.log(`Using replacement product for ${category}:`, detailsData[newProductId]);
+              }
+            }
+          }
         }
-
-        //setProductDetails(detailsData);
+  
+        console.log("Final details data:", detailsData);
+  
+        // Update products with the fetched details
+        setProducts(prevProducts => {
+          const updatedProducts = { ...prevProducts };
+          
+          // Update each category's products
+          for (const category in updatedProducts) {
+            updatedProducts[category] = updatedProducts[category].map(product => {
+              // If we have details for this product, update it
+              if (detailsData[product.id]) {
+                return {
+                  ...product,
+                  name: detailsData[product.id].name,
+                  brand: detailsData[product.id].brand,
+                  price: detailsData[product.id].price
+                };
+              }
+              
+              // Check if we need to replace this product with a fallback
+              const replacement = Object.values(detailsData).find(
+                detail => detail.isReplacement && detail.category === category
+              );
+              
+              if (replacement && !product.hidden) {
+                return {
+                  ...product,
+                  id: replacement.id,
+                  name: replacement.name,
+                  brand: replacement.brand,
+                  price: replacement.price
+                };
+              }
+              
+              return product;
+            });
+          }
+          
+          return updatedProducts;
+        });
+        
       } catch (err) {
-        console.error("Error fetching product details:", err);
+        console.error("Error in fetchProductDetails:", err);
       }
     };
-
-    fetchProductDetails();
-  }, [productIds]);
+  
+    // Add a small delay to avoid too many requests during initial loading
+    const timer = setTimeout(() => {
+      fetchProductDetails();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [products, productIds]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -189,21 +318,18 @@ const SwipeBop = () => {
 
     const card = cardRefs.current[id];
     if (deltaX > 0) {
-      // Liking - show green overlay
       card.querySelector(".like-overlay").style.opacity = Math.min(
         deltaX / 100,
         0.8
       );
       card.querySelector(".dislike-overlay").style.opacity = 0;
     } else if (deltaX < 0) {
-      // Disliking - show red overlay
       card.querySelector(".dislike-overlay").style.opacity = Math.min(
         -deltaX / 100,
         0.8
       );
       card.querySelector(".like-overlay").style.opacity = 0;
     } else {
-      // Reset overlays
       card.querySelector(".like-overlay").style.opacity = 0;
       card.querySelector(".dislike-overlay").style.opacity = 0;
     }
@@ -240,7 +366,7 @@ const SwipeBop = () => {
     setProducts((prevProducts) => {
       const updatedProducts = { ...prevProducts };
 
-      // Find which category contains this product
+      // Find which category this product is from
       for (const category in updatedProducts) {
         const index = updatedProducts[category].findIndex(
           (product) => product.id === id
