@@ -105,9 +105,6 @@ const SwipeBop = () => {
                 return {
                   id,
                   imageUrl: product.imageUrl || product.image,
-                  name: product.name || "Product Name",
-                  brand: product.brand || "Brand Name",
-                  price: product.price || "$0.00",
                   category,
                 };
               } else {
@@ -153,39 +150,153 @@ const SwipeBop = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       if (productIds.length === 0) return;
-
+  
       try {
-        const detailsData = {}; // Object to store details of each product
-
-        for (const productId of productIds) {
-          const response = await fetch(
-            `http://18.118.186.108:5000/swipebop/search`,
-            {
-              method: "GET",
-              headers: {
-                Accept: "application/json",
-                "Client-Id": "Shopbop-UW-Team2-2024",
-                "Client-Version": "1.0.0",
-              },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch product ${productId}`);
+        const currentlyVisibleProducts = {
+          shirts: products.shirts.filter(p => !p.hidden),
+          pants: products.pants.filter(p => !p.hidden),
+          shoes: products.shoes.filter(p => !p.hidden),
+          accessories: products.accessories.filter(p => !p.hidden)
+        };
+  
+        //console.log("Attempting to fetch details for products:", currentlyVisibleProducts);
+  
+        const categories = ["shirts", "pants", "shoes", "accessories"];
+        const detailsData = {};
+  
+        for (const category of categories) {
+          // Skip empty categories
+          if (currentlyVisibleProducts[category].length === 0) continue;
+          
+          const productToFetch = currentlyVisibleProducts[category][0];
+          
+          if (!productToFetch || !productToFetch.id) {
+            console.log(`No valid product found for category: ${category}`);
+            continue;
           }
-
+          
+          console.log(`Fetching details for ${category} product:`, productToFetch.id);
+  
+          const queryParams = new URLSearchParams({
+            q: category,
+            limit: 20,   
+            lang: "en-US",
+            currency: "USD"
+          });
+  
+          const response = await fetch(`http://18.118.186.108:5000/swipebop/search?${queryParams}`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Client-Id': 'Shopbop-UW-Team2-2024',
+              'Client-Version': '1.0.0',
+            },
+          });
+  
+          if (!response.ok) {
+            console.error(`Failed to fetch ${category} products`);
+            continue;
+          }
+  
           const data = await response.json();
-          detailsData[productId] = data;
+          console.log(`${category} search results:`, data);
+          
+          if (data && data.products && Array.isArray(data.products)) {
+            let foundProduct = null;
+            
+            for (const item of data.products) {
+              if (item.product && item.product.productSin) {
+                const productSin = item.product.productSin;
+                
+                console.log(`Found product with ID ${productSin} in ${category} results`);
+                
+                if (productToFetch.id === productSin) {
+                  console.log(`Match found for ${category}!`);
+                  foundProduct = item.product;
+                  break;
+                }
+              }
+            }
+            
+            if (foundProduct) {
+              detailsData[productToFetch.id] = {
+                name: foundProduct.shortDescription || "Product Name",
+                brand: foundProduct.designerName || "Brand Name",
+                price: foundProduct.lowPrice?.price || foundProduct.retailPrice?.price || "$0.00",
+                category: category
+              };
+            } else {
+              
+              if (data.products.length > 0 && data.products[0].product) {
+                const firstProduct = data.products[0].product;
+                
+                const newProductId = firstProduct.productSin;
+                detailsData[newProductId] = {
+                  id: newProductId, // new id
+                  name: firstProduct.shortDescription || "Product Name",
+                  brand: firstProduct.designerName || "Brand Name",
+                  price: firstProduct.lowPrice?.price || firstProduct.retailPrice?.price || "$0.00",
+                  category: category,
+                  isReplacement: true // make sure replacement 
+                };
+                
+                console.log(`Using replacement product for ${category}:`, detailsData[newProductId]);
+              }
+            }
+          }
         }
-
-        //setProductDetails(detailsData);
+  
+        console.log("Final details data:", detailsData);
+  
+        // Update products with the fetched details
+        setProducts(prevProducts => {
+          const updatedProducts = { ...prevProducts };
+          
+          // each category product
+          for (const category in updatedProducts) {
+            updatedProducts[category] = updatedProducts[category].map(product => {
+              if (detailsData[product.id]) {
+                return {
+                  ...product,
+                  name: detailsData[product.id].name,
+                  brand: detailsData[product.id].brand,
+                  price: detailsData[product.id].price
+                };
+              }
+              
+              const replacement = Object.values(detailsData).find(
+                detail => detail.isReplacement && detail.category === category
+              );
+              
+              if (replacement && !product.hidden) {
+                return {
+                  ...product,
+                  name: replacement.name,
+                  brand: replacement.brand,
+                  price: replacement.price,
+                  isReplacement: true,
+                };
+              }
+              
+              return product;
+            });
+          }
+          
+          return updatedProducts;
+        });
+        
       } catch (err) {
-        console.error("Error fetching product details:", err);
+        console.error("Error in fetchProductDetails:", err);
       }
     };
-
-    fetchProductDetails();
-  }, []);
+  
+    // Add a small delay to avoid too many requests during initial loading
+    const timer = setTimeout(() => {
+      fetchProductDetails();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [products, productIds]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -210,21 +321,18 @@ const SwipeBop = () => {
 
     const card = cardRefs.current[id];
     if (deltaX > 0) {
-      // Liking - show green overlay
       card.querySelector(".like-overlay").style.opacity = Math.min(
         deltaX / 100,
         0.8
       );
       card.querySelector(".dislike-overlay").style.opacity = 0;
     } else if (deltaX < 0) {
-      // Disliking - show red overlay
       card.querySelector(".dislike-overlay").style.opacity = Math.min(
         -deltaX / 100,
         0.8
       );
       card.querySelector(".like-overlay").style.opacity = 0;
     } else {
-      // Reset overlays
       card.querySelector(".like-overlay").style.opacity = 0;
       card.querySelector(".dislike-overlay").style.opacity = 0;
     }
@@ -261,7 +369,7 @@ const SwipeBop = () => {
     setProducts((prevProducts) => {
       const updatedProducts = { ...prevProducts };
 
-      // Find which category contains this product
+      // Find which category this product is from
       for (const category in updatedProducts) {
         const index = updatedProducts[category].findIndex(
           (product) => product.id === id
