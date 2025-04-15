@@ -64,6 +64,7 @@ const Item = forwardRef(({
       alert("Please log in to discard item.");
       return;
     }
+    handleClose();
     handleDislike(productId);
   };
 
@@ -79,6 +80,7 @@ const Item = forwardRef(({
       alert("Please log in to like item.");
       return;
     }
+    handleClose();
     handleLike(productId);
   };
   
