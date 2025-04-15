@@ -77,7 +77,7 @@ const SwipeBop = () => {
           });
 
           const response = await fetch(
-            `http://18.118.186.108:5000/swipebop/images?${queryParams}`,
+            `http://18.118.186.108:5000/swipebop/search?${queryParams}`,
             {
               method: "GET",
               headers: {
@@ -93,45 +93,24 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
+          console.log(data.products)
+          const ids = data.products.map((x) => x.product.productSin);
+          setProductIds(ids);
+          console.log("Fetched product IDs:", ids);
 
-          if (data && typeof data === "object") {
-            console.log(data);
-            const ids = Object.keys(data);
-            setProductIds(ids);
-            console.log("Fetched product IDs:", ids);
+          const productArray = data.products.map((product) => {
+            return {
+              id: product.product.productSin,
+              imageUrl: "https://m.media-amazon.com/images/G/01/Shopbop/p/" + product.product.colors[0].images[0].src,
+              name: product.product.shortDescription,
+              brand: product.product.designerName,
+              price: product.product.retailPrice.price,
+              url: "https://shopbop.com/" + product.product.productDetailUrl,
+              category,
+            };
+          });
 
-            const productArray = Object.entries(data).map(([id, product]) => {
-              if (typeof product === "object") {
-                return {
-                  id,
-                  imageUrl: product.imageUrl || product.image,
-                  category,
-                };
-              } else {
-                return {
-                  id,
-                  imageUrl: product,
-                  name: `${
-                    category.charAt(0).toUpperCase() + category.slice(1)
-                  } Item`,
-                  brand: "Fashion Brand",
-                  price: "$99.00",
-                  category,
-                };
-              }
-            });
-
-            fetchedProducts[category] = productArray.slice(0, 5);
-          } else if (Array.isArray(data.products)) {
-            fetchedProducts[category] = data.products
-              .slice(0, 5)
-              .map((product) => ({
-                ...product,
-                category,
-              }));
-          } else {
-            fetchedProducts[category] = [];
-          }
+          fetchedProducts[category] = productArray.slice(0, 5);
         }
 
         setProducts(fetchedProducts);
@@ -147,156 +126,156 @@ const SwipeBop = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      if (productIds.length === 0) return;
-  
-      try {
-        const currentlyVisibleProducts = {
-          shirts: products.shirts.filter(p => !p.hidden),
-          pants: products.pants.filter(p => !p.hidden),
-          shoes: products.shoes.filter(p => !p.hidden),
-          accessories: products.accessories.filter(p => !p.hidden)
-        };
-  
-        //console.log("Attempting to fetch details for products:", currentlyVisibleProducts);
-  
-        const categories = ["shirts", "pants", "shoes", "accessories"];
-        const detailsData = {};
-  
-        for (const category of categories) {
-          // Skip empty categories
-          if (currentlyVisibleProducts[category].length === 0) continue;
-          
-          const productToFetch = currentlyVisibleProducts[category][0];
-          
-          if (!productToFetch || !productToFetch.id) {
-            console.log(`No valid product found for category: ${category}`);
-            continue;
-          }
-          
-          console.log(`Fetching details for ${category} product:`, productToFetch.id);
-  
-          const queryParams = new URLSearchParams({
-            q: category,
-            limit: 20,   
-            lang: "en-US",
-            currency: "USD"
-          });
-  
-          const response = await fetch(`http://18.118.186.108:5000/swipebop/search?${queryParams}`, {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              'Client-Id': 'Shopbop-UW-Team2-2024',
-              'Client-Version': '1.0.0',
-            },
-          });
-  
-          if (!response.ok) {
-            console.error(`Failed to fetch ${category} products`);
-            continue;
-          }
-  
-          const data = await response.json();
-          console.log(`${category} search results:`, data);
-          
-          if (data && data.products && Array.isArray(data.products)) {
-            let foundProduct = null;
-            
-            for (const item of data.products) {
-              if (item.product && item.product.productSin) {
-                const productSin = item.product.productSin;
-                
-                console.log(`Found product with ID ${productSin} in ${category} results`);
-                
-                if (productToFetch.id === productSin) {
-                  console.log(`Match found for ${category}!`);
-                  foundProduct = item.product;
-                  break;
-                }
-              }
-            }
-            
-            if (foundProduct) {
-              detailsData[productToFetch.id] = {
-                name: foundProduct.shortDescription || "Product Name",
-                brand: foundProduct.designerName || "Brand Name",
-                price: foundProduct.lowPrice?.price || foundProduct.retailPrice?.price || "$0.00",
-                category: category
-              };
-            } else {
-              
-              if (data.products.length > 0 && data.products[0].product) {
-                const firstProduct = data.products[0].product;
-                
-                const newProductId = firstProduct.productSin;
-                detailsData[newProductId] = {
-                  id: newProductId, // new id
-                  name: firstProduct.shortDescription || "Product Name",
-                  brand: firstProduct.designerName || "Brand Name",
-                  price: firstProduct.lowPrice?.price || firstProduct.retailPrice?.price || "$0.00",
-                  category: category,
-                  isReplacement: true // make sure replacement 
-                };
-                
-                console.log(`Using replacement product for ${category}:`, detailsData[newProductId]);
-              }
-            }
-          }
-        }
-  
-        console.log("Final details data:", detailsData);
-  
-        // Update products with the fetched details
-        setProducts(prevProducts => {
-          const updatedProducts = { ...prevProducts };
-          
-          // each category product
-          for (const category in updatedProducts) {
-            updatedProducts[category] = updatedProducts[category].map(product => {
-              if (detailsData[product.id]) {
-                return {
-                  ...product,
-                  name: detailsData[product.id].name,
-                  brand: detailsData[product.id].brand,
-                  price: detailsData[product.id].price
-                };
-              }
-              
-              const replacement = Object.values(detailsData).find(
-                detail => detail.isReplacement && detail.category === category
-              );
-              
-              if (replacement && !product.hidden) {
-                return {
-                  ...product,
-                  name: replacement.name,
-                  brand: replacement.brand,
-                  price: replacement.price,
-                  isReplacement: true,
-                };
-              }
-              
-              return product;
-            });
-          }
-          
-          return updatedProducts;
-        });
-        
-      } catch (err) {
-        console.error("Error in fetchProductDetails:", err);
-      }
-    };
-  
-    // Add a small delay to avoid too many requests during initial loading
-    const timer = setTimeout(() => {
-      fetchProductDetails();
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [products, productIds]);
+  // useEffect(() => {
+  //   const fetchProductDetails = async () => {
+  //     if (productIds.length === 0) return;
+
+  //     try {
+  //       const currentlyVisibleProducts = {
+  //         shirts: products.shirts.filter(p => !p.hidden),
+  //         pants: products.pants.filter(p => !p.hidden),
+  //         shoes: products.shoes.filter(p => !p.hidden),
+  //         accessories: products.accessories.filter(p => !p.hidden)
+  //       };
+
+  //       //console.log("Attempting to fetch details for products:", currentlyVisibleProducts);
+
+  //       const categories = ["shirts", "pants", "shoes", "accessories"];
+  //       const detailsData = {};
+
+  //       for (const category of categories) {
+  //         // Skip empty categories
+  //         if (currentlyVisibleProducts[category].length === 0) continue;
+
+  //         const productToFetch = currentlyVisibleProducts[category][0];
+
+  //         if (!productToFetch || !productToFetch.id) {
+  //           console.log(`No valid product found for category: ${category}`);
+  //           continue;
+  //         }
+
+  //         console.log(`Fetching details for ${category} product:`, productToFetch.id);
+
+  //         const queryParams = new URLSearchParams({
+  //           q: category,
+  //           limit: 20,
+  //           lang: "en-US",
+  //           currency: "USD"
+  //         });
+
+  //         const response = await fetch(`http://18.118.186.108:5000/swipebop/search?${queryParams}`, {
+  //           method: 'GET',
+  //           headers: {
+  //             Accept: 'application/json',
+  //             'Client-Id': 'Shopbop-UW-Team2-2024',
+  //             'Client-Version': '1.0.0',
+  //           },
+  //         });
+
+  //         if (!response.ok) {
+  //           console.error(`Failed to fetch ${category} products`);
+  //           continue;
+  //         }
+
+  //         const data = await response.json();
+  //         console.log(`${category} search results:`, data);
+
+  //         if (data && data.products && Array.isArray(data.products)) {
+  //           let foundProduct = null;
+
+  //           for (const item of data.products) {
+  //             if (item.product && item.product.productSin) {
+  //               const productSin = item.product.productSin;
+
+  //               console.log(`Found product with ID ${productSin} in ${category} results`);
+
+  //               if (productToFetch.id === productSin) {
+  //                 console.log(`Match found for ${category}!`);
+  //                 foundProduct = item.product;
+  //                 break;
+  //               }
+  //             }
+  //           }
+
+  //           if (foundProduct) {
+  //             detailsData[productToFetch.id] = {
+  //               name: foundProduct.shortDescription || "Product Name",
+  //               brand: foundProduct.designerName || "Brand Name",
+  //               price: foundProduct.lowPrice?.price || foundProduct.retailPrice?.price || "$0.00",
+  //               category: category
+  //             };
+  //           } else {
+
+  //             if (data.products.length > 0 && data.products[0].product) {
+  //               const firstProduct = data.products[0].product;
+
+  //               const newProductId = firstProduct.productSin;
+  //               detailsData[newProductId] = {
+  //                 id: newProductId, // new id
+  //                 name: firstProduct.shortDescription || "Product Name",
+  //                 brand: firstProduct.designerName || "Brand Name",
+  //                 price: firstProduct.lowPrice?.price || firstProduct.retailPrice?.price || "$0.00",
+  //                 category: category,
+  //                 isReplacement: true // make sure replacement
+  //               };
+
+  //               console.log(`Using replacement product for ${category}:`, detailsData[newProductId]);
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //       console.log("Final details data:", detailsData);
+
+  //       // Update products with the fetched details
+  //       setProducts(prevProducts => {
+  //         const updatedProducts = { ...prevProducts };
+
+  //         // each category product
+  //         for (const category in updatedProducts) {
+  //           updatedProducts[category] = updatedProducts[category].map(product => {
+  //             if (detailsData[product.id]) {
+  //               return {
+  //                 ...product,
+  //                 name: detailsData[product.id].name,
+  //                 brand: detailsData[product.id].brand,
+  //                 price: detailsData[product.id].price
+  //               };
+  //             }
+
+  //             const replacement = Object.values(detailsData).find(
+  //               detail => detail.isReplacement && detail.category === category
+  //             );
+
+  //             if (replacement && !product.hidden) {
+  //               return {
+  //                 ...product,
+  //                 name: replacement.name,
+  //                 brand: replacement.brand,
+  //                 price: replacement.price,
+  //                 isReplacement: true,
+  //               };
+  //             }
+
+  //             return product;
+  //           });
+  //         }
+
+  //         return updatedProducts;
+  //       });
+
+  //     } catch (err) {
+  //       console.error("Error in fetchProductDetails:", err);
+  //     }
+  //   };
+
+  //   // Add a small delay to avoid too many requests during initial loading
+  //   const timer = setTimeout(() => {
+  //     fetchProductDetails();
+  //   }, 500);
+
+  //   return () => clearTimeout(timer);
+  // }, [products, productIds]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -739,15 +718,18 @@ const SwipeBop = () => {
 
   const clearLiked = async () => {
     try {
-      const res = await fetch("http://18.118.186.108:5000//swipebop/liked/delete_all", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userID,
-        }),
-      });
+      const res = await fetch(
+        "http://18.118.186.108:5000//swipebop/liked/delete_all",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+          }),
+        }
+      );
       if (res.ok) {
         const result = await res.json();
         console.log("Cleared liked products:", result);
@@ -756,8 +738,7 @@ const SwipeBop = () => {
         const error = await res.json();
         console.error("Error clearing liked products:", error);
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error clearing liked products:", error);
       alert("Error clearing liked products. Please try again.");
     }
@@ -765,15 +746,18 @@ const SwipeBop = () => {
 
   const clearDisliked = async () => {
     try {
-      const res = await fetch("http://18.118.186.108:5000//swipebop/discard/delete_all", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userID,
-        }),
-      });
+      const res = await fetch(
+        "http://18.118.186.108:5000//swipebop/discard/delete_all",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+          }),
+        }
+      );
       if (res.ok) {
         const result = await res.json();
         console.log("Cleared discarded products:", result);
@@ -787,7 +771,7 @@ const SwipeBop = () => {
       alert("Error clearing discarded products. Please try again.");
     }
   };
-  
+
   return (
     <div>
       <Navbar />
@@ -901,7 +885,7 @@ const SwipeBop = () => {
           <Modal.Title>Liked Items</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <button
+          <button
             style={{
               backgroundColor:
                 likedProducts &&
@@ -1040,7 +1024,7 @@ const SwipeBop = () => {
           <Modal.Title>Discarded Items</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <button
+          <button
             style={{
               backgroundColor:
                 discardedProducts &&
