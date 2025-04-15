@@ -1,9 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Modal } from "react-bootstrap";
 import { getCurrentUser } from "@aws-amplify/auth";
 import "./Swipe.css";
+import "../login.css";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Item from "./Item";
+
+const styles = {
+  button: {
+    background: "#DB3B14",
+    color: "white",
+    padding: "0.8rem 2rem",
+    border: "none",
+    borderRadius: "40px",
+    cursor: "pointer",
+  },
+};
 
 const SwipeBop = () => {
   const [products, setProducts] = useState({
@@ -22,6 +36,11 @@ const SwipeBop = () => {
   const SWIPE_THRESHOLD = 100;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userID, setUserID] = useState(null);
+  const [likedProducts, setLikedProducts] = useState([]);
+  const [discardedProducts, setDiscardedProducts] = useState([]);
+  const [likedModal, setLikedModal] = useState(false);
+  const [discardedModal, setDiscardedModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -74,7 +93,7 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
-          
+
           if (data && typeof data === "object") {
             console.log(data);
             const ids = Object.keys(data);
@@ -130,11 +149,9 @@ const SwipeBop = () => {
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      // Only proceed if we have product IDs
       if (productIds.length === 0) return;
   
       try {
-        // Get currently visible products from all categories
         const currentlyVisibleProducts = {
           shirts: products.shirts.filter(p => !p.hidden),
           pants: products.pants.filter(p => !p.hidden),
@@ -142,10 +159,8 @@ const SwipeBop = () => {
           accessories: products.accessories.filter(p => !p.hidden)
         };
   
-        // Log what we're trying to fetch
-        console.log("Attempting to fetch details for products:", currentlyVisibleProducts);
+        //console.log("Attempting to fetch details for products:", currentlyVisibleProducts);
   
-        // Process each category separately to ensure we get details for all
         const categories = ["shirts", "pants", "shoes", "accessories"];
         const detailsData = {};
   
@@ -153,7 +168,6 @@ const SwipeBop = () => {
           // Skip empty categories
           if (currentlyVisibleProducts[category].length === 0) continue;
           
-          // Get the first item from each category
           const productToFetch = currentlyVisibleProducts[category][0];
           
           if (!productToFetch || !productToFetch.id) {
@@ -163,10 +177,9 @@ const SwipeBop = () => {
           
           console.log(`Fetching details for ${category} product:`, productToFetch.id);
   
-          // Make individual requests for reliable results
           const queryParams = new URLSearchParams({
-            q: category, // Use category as search term
-            limit: 20,   // Increase limit to ensure we find the product
+            q: category,
+            limit: 20,   
             lang: "en-US",
             currency: "USD"
           });
@@ -188,17 +201,13 @@ const SwipeBop = () => {
           const data = await response.json();
           console.log(`${category} search results:`, data);
           
-          // Look for our product in the results
           if (data && data.products && Array.isArray(data.products)) {
-            // Try to find our product by ID
             let foundProduct = null;
             
-            // Search through all returned products
             for (const item of data.products) {
               if (item.product && item.product.productSin) {
                 const productSin = item.product.productSin;
                 
-                // Log to see what IDs we're finding
                 console.log(`Found product with ID ${productSin} in ${category} results`);
                 
                 if (productToFetch.id === productSin) {
@@ -210,7 +219,6 @@ const SwipeBop = () => {
             }
             
             if (foundProduct) {
-              // Store the details for this product
               detailsData[productToFetch.id] = {
                 name: foundProduct.shortDescription || "Product Name",
                 brand: foundProduct.designerName || "Brand Name",
@@ -218,21 +226,18 @@ const SwipeBop = () => {
                 category: category
               };
             } else {
-              console.log(`No matching product found for ${category} with ID ${productToFetch.id}`);
               
-              // As a fallback, use the first product from search results
               if (data.products.length > 0 && data.products[0].product) {
                 const firstProduct = data.products[0].product;
                 
-                // Store the new product ID and details
                 const newProductId = firstProduct.productSin;
                 detailsData[newProductId] = {
-                  id: newProductId, // Include the new ID
+                  id: newProductId, // new id
                   name: firstProduct.shortDescription || "Product Name",
                   brand: firstProduct.designerName || "Brand Name",
                   price: firstProduct.lowPrice?.price || firstProduct.retailPrice?.price || "$0.00",
                   category: category,
-                  isReplacement: true // Flag that this is a replacement
+                  isReplacement: true // make sure replacement 
                 };
                 
                 console.log(`Using replacement product for ${category}:`, detailsData[newProductId]);
@@ -247,10 +252,9 @@ const SwipeBop = () => {
         setProducts(prevProducts => {
           const updatedProducts = { ...prevProducts };
           
-          // Update each category's products
+          // each category product
           for (const category in updatedProducts) {
             updatedProducts[category] = updatedProducts[category].map(product => {
-              // If we have details for this product, update it
               if (detailsData[product.id]) {
                 return {
                   ...product,
@@ -260,7 +264,6 @@ const SwipeBop = () => {
                 };
               }
               
-              // Check if we need to replace this product with a fallback
               const replacement = Object.values(detailsData).find(
                 detail => detail.isReplacement && detail.category === category
               );
@@ -268,10 +271,10 @@ const SwipeBop = () => {
               if (replacement && !product.hidden) {
                 return {
                   ...product,
-                  id: replacement.id,
                   name: replacement.name,
                   brand: replacement.brand,
-                  price: replacement.price
+                  price: replacement.price,
+                  isReplacement: true,
                 };
               }
               
@@ -385,37 +388,118 @@ const SwipeBop = () => {
     });
   };
 
-  const handleDislike = (productId) => {
+  const handleDislike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-    
-    card.style.transition = 'transform 0.3s ease';
-    card.style.transform = 'translateX(-1000px) rotate(-30deg)';
+
+    const outfits = getSelectedProducts();
+    const item = outfits.find((product) => product.id == productId);
+    if (!item) {
+      alert("Product not found, Please try again later");
+      return;
+    }
+    const product = {
+      productSin: item.id,
+      imageUrl: item.imageUrl,
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      category: item.category,
+    };
+
+    try {
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/discard/insert",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product: product,
+          }),
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Discarded product:", result);
+      } else {
+        const error = await res.json();
+        console.error("Error discarding product:", error);
+      }
+    } catch (error) {
+      console.error("Error discarding product:", error);
+    }
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(-1000px) rotate(-30deg)";
     setTimeout(() => removeCard(productId), 300);
   };
-  
-  const handleReset = (productId) => {
-    const card = cardRefs.current[productId];
-    if (!card) return;
-    
-    card.style.transition = 'transform 0.3s ease';
-    card.style.transform = 'translateX(0) rotate(0)';
-    card.querySelector('.like-overlay').style.opacity = 0;
-    card.querySelector('.dislike-overlay').style.opacity = 0;
-  };
-  
-  const handleShare = (productId) => {
-    // Implement your share/save functionality here
-    console.log(`Saving product ${productId} to closet`);
 
-  };
-  
-  const handleLike = (productId) => {
+  // const handleReset = (productId) => {
+  //   const card = cardRefs.current[productId];
+  //   if (!card) return;
+
+  //   card.style.transition = "transform 0.3s ease";
+  //   card.style.transform = "translateX(0) rotate(0)";
+  //   card.querySelector(".like-overlay").style.opacity = 0;
+  //   card.querySelector(".dislike-overlay").style.opacity = 0;
+  // };
+
+  const handleLike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-    
-    card.style.transition = 'transform 0.3s ease';
-    card.style.transform = 'translateX(1000px) rotate(30deg)';
+    const outfits = getSelectedProducts();
+    const item = outfits.find((product) => product.id == productId);
+    if (!item) {
+      alert("Product not found, Please try again later");
+      return;
+    }
+    const product = {
+      productSin: item.id,
+      imageUrl: item.imageUrl,
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      category: item.category,
+    };
+
+    try {
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/liked/insert",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product: product,
+          }),
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Liked product:", result);
+      } else {
+        const error = await res.json();
+        console.error("Error liking product:", error);
+      }
+    } catch (error) {
+      console.error("Error liking product:", error);
+    }
+
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(1000px) rotate(30deg)";
+    setTimeout(() => removeCard(productId), 300);
+  };
+
+  const handleSaveSwipe = (productId) => {
+    const card = cardRefs.current[productId];
+    if (!card) return;
+
+    card.style.transition = "transform 0.3s ease";
+    card.style.transform = "translateX(1000px) rotate(30deg)";
     setTimeout(() => removeCard(productId), 300);
   };
 
@@ -429,18 +513,18 @@ const SwipeBop = () => {
     });
 
     visibleProductIds.forEach((id) => {
-      switch(action) {
-        case 'dislike':
+      switch (action) {
+        case "dislike":
           handleDislike(id);
           break;
-        case 'reset':
+        case "reset":
           handleReset(id);
           break;
-        case 'like':
+        case "like":
           handleLike(id);
           break;
-        case 'save':
-          handleShare(id);
+        case "save":
+          handleSaveSwipe(id);
           break;
         default:
           break;
@@ -461,6 +545,145 @@ const SwipeBop = () => {
     });
 
     return selectedProducts;
+  };
+
+  const fetchLikedProducts = async () => {
+    try {
+      const res = await fetch(
+        `http://18.118.186.108:5000/swipebop/liked/${userID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        setLikedProducts(result);
+        console.log("Liked products:", likedProducts);
+        setLikedModal(true);
+      } else {
+        const error = await res.json();
+        console.error("Error fetching liked products:", error);
+        alert("Failed to fetch liked products");
+      }
+    } catch (error) {
+      console.error("Error fetching liked products:", error);
+      alert("Error fetching liked products. Please try again.");
+    }
+  };
+
+  const fetchDiscardedProducts = async () => {
+    try {
+      const res = await fetch(
+        `http://18.118.186.108:5000/swipebop/discard/${userID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Discarded products:", result);
+        setDiscardedProducts(result);
+        setDiscardedModal(true);
+      } else {
+        const error = await res.json();
+        console.error("Error fetching discarded products:", error);
+        alert("Failed to fetch discarded products");
+      }
+    } catch (error) {
+      console.error("Error fetching discarded products:", error);
+      alert("Error fetching discarded products. Please try again.");
+    }
+  };
+
+  const removeFromLiked = async (productId) => {
+    console.log(userID, productId);
+    try {
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/liked/delete",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product_id: productId,
+          }),
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        setLikedProducts((prev) => ({
+          ...prev,
+          items: prev.items.filter((item) => item.product.id !== productId),
+        }));
+        fetchLikedProducts();
+      } else {
+        const error = await res.json();
+        console.error("Error removing from liked products:", error);
+        alert("Failed to remove from liked products");
+      }
+    } catch (error) {
+      console.error("Error removing from liked products:", error);
+      alert("Error removing from liked products. Please try again.");
+    }
+  };
+
+  const removeFromDiscard = async (productId) => {
+    try {
+      const res = await fetch(
+        "http://18.118.186.108:5000/swipebop/discard/delete",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userID,
+            product_id: productId,
+          }),
+        }
+      );
+      if (res.ok) {
+        const result = await res.json();
+        setDiscardedProducts((prev) => ({
+          ...prev,
+          items: prev.items.filter((item) => item.product.id !== productId),
+        }));
+        fetchDiscardedProducts();
+      } else {
+        const error = await res.json();
+        console.error("Error removing from discarded products:", error);
+        alert("Failed to remove from discarded products");
+      }
+    } catch (error) {
+      console.error("Error removing from discarded products:", error);
+      alert("Error removing from discarded products. Please try again.");
+    }
+  };
+
+  const restoreItem = (product, productId, liked) => {
+    const restoredProduct = { ...product, id: productId };
+    console.log("Restored product:", restoredProduct);
+
+    setProducts((prevProducts) => {
+      const updatedProducts = { ...prevProducts };
+      const categoryProducts = updatedProducts[restoredProduct.category];
+      categoryProducts.unshift({ ...restoredProduct, hidden: false });
+      return updatedProducts;
+    });
+
+    if (liked) {
+      removeFromLiked(productId);
+    } else {
+      removeFromDiscard(productId);
+    }
   };
 
   const handleSaveOutfit = async () => {
@@ -493,7 +716,6 @@ const SwipeBop = () => {
       if (res.ok) {
         const result = await res.json();
         alert("Outfit saved successfully!");
-        console.log(result);
         handleButtonAction("save");
       } else {
         const error = await res.json();
@@ -506,6 +728,66 @@ const SwipeBop = () => {
     }
   };
 
+  const handleDiscardOutfit = async () => {
+    const products = getSelectedProducts();
+
+    for (let i = 0; i < products.length; i++) {
+      handleDislike(products[i].id);
+    }
+    return;
+  };
+
+  const clearLiked = async () => {
+    try {
+      const res = await fetch("http://18.118.186.108:5000//swipebop/liked/delete_all", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Cleared liked products:", result);
+        setLikedProducts({ items: [] });
+      } else {
+        const error = await res.json();
+        console.error("Error clearing liked products:", error);
+      }
+    }
+    catch (error) {
+      console.error("Error clearing liked products:", error);
+      alert("Error clearing liked products. Please try again.");
+    }
+  };
+
+  const clearDisliked = async () => {
+    try {
+      const res = await fetch("http://18.118.186.108:5000//swipebop/discard/delete_all", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userID,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        console.log("Cleared discarded products:", result);
+        setDiscardedProducts({ items: [] });
+      } else {
+        const error = await res.json();
+        console.error("Error clearing discarded products:", error);
+      }
+    } catch (error) {
+      console.error("Error clearing discarded products:", error);
+      alert("Error clearing discarded products. Please try again.");
+    }
+  };
+  
   return (
     <div>
       <Navbar />
@@ -530,9 +812,8 @@ const SwipeBop = () => {
                   style={{ touchAction: "pan-y" }}
                   productId={product.id}
                   handleDislike={handleDislike}
-                  handleReset={handleReset}
-                  handleShare={handleShare}
                   handleLike={handleLike}
+                  isLoggedIn={isLoggedIn}
                 >
                   <div className="dislike-overlay"></div>
                   <div className="like-overlay"></div>
@@ -557,7 +838,7 @@ const SwipeBop = () => {
 
         <div className="action-buttons">
           <button
-            onClick={() => handleButtonAction("dislike")}
+            onClick={() => handleDiscardOutfit()}
             className="action-button dislike"
           >
             <span>✕</span>
@@ -569,15 +850,323 @@ const SwipeBop = () => {
           >
             <span>→</span>
           </button>
-
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "10px",
+          }}
+        >
           <button
-            onClick={() => handleButtonAction("like")}
-            className="action-button like"
+            style={{
+              backgroundColor: "transparent",
+              color: "#DB3B14",
+              border: "1px solid #DB3B14",
+              borderRadius: "20px",
+              padding: "5px 10px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+              marginRight: "10px",
+              flex: 1,
+            }}
+            onClick={() => fetchDiscardedProducts()}
           >
-            <span>♥</span>
+            Discard Pile
+          </button>
+          <button
+            style={{
+              backgroundColor: "#DB3B14",
+              color: "white",
+              border: "none",
+              borderRadius: "20px",
+              padding: "5px 10px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+              flex: 1,
+            }}
+            onClick={() => fetchLikedProducts()}
+          >
+            Liked Wishlist
           </button>
         </div>
       </div>
+      <Modal
+        show={likedModal}
+        onHide={() => setLikedModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Liked Items</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        <button
+            style={{
+              backgroundColor:
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+                  ? "#DB3B14"
+                  : "#ccc",
+              color: "white",
+              padding: "0.8rem 1.5rem",
+              border: "none",
+              borderRadius: "20px",
+              cursor:
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+                  ? "pointer"
+                  : "not-allowed",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              transition: "background-color 0.3s ease, transform 0.2s ease",
+              boxShadow:
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+                  ? "0px 4px 6px rgba(0, 0, 0, 0.1)"
+                  : "none",
+            }}
+            onClick={() => clearLiked()}
+            disabled={
+              !likedProducts ||
+              !likedProducts.items ||
+              likedProducts.items.length === 0
+            }
+            onMouseEnter={(e) => {
+              if (
+                likedProducts &&
+                likedProducts.items &&
+                likedProducts.items.length > 0
+              ) {
+                e.target.style.transform = "scale(1.05)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+            }}
+          >
+            Clear
+          </button>
+          <div className="horizontal-scroll-container">
+            {likedProducts.items && likedProducts.items.length > 0 ? (
+              likedProducts.items.map((item, idx) => (
+                <div key={idx}>
+                  <div className="scroll-item-card">
+                    <img src={item.product.imageUrl} alt={item.product.name} />
+                    <h5>{item.product.name}</h5>
+                    <p>{item.product.brand}</p>
+                    <p>{item.product.price}</p>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <button
+                        style={{
+                          backgroundColor: "transparent",
+                          color: "#DB3B14",
+                          border: "1px solid #DB3B14",
+                          borderRadius: "20px",
+                          padding: "5px 10px",
+                          fontSize: "0.8rem",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                          flex: 1,
+                        }}
+                        onClick={() => removeFromLiked(item.product_id)}
+                      >
+                        Remove
+                      </button>
+                      <button
+                        style={{
+                          backgroundColor: "#DB3B14",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "20px",
+                          padding: "5px 10px",
+                          fontSize: "0.8rem",
+                          cursor: "pointer",
+                          flex: 1,
+                        }}
+                        onClick={() =>
+                          restoreItem(item.product, item.product_id, true)
+                        }
+                      >
+                        Restore
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div>
+                {isLoggedIn ? (
+                  <p>No liked items to show.</p>
+                ) : (
+                  <>
+                    <p>Please Login / Register to see your liked items.</p>
+                    <button
+                      style={{ ...styles.button, marginRight: "10px" }}
+                      onClick={() => navigate("/login")}
+                    >
+                      Login
+                    </button>
+                    <button
+                      style={styles.button}
+                      onClick={() => navigate("/signup")}
+                    >
+                      Signup
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={discardedModal}
+        onHide={() => setDiscardedModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Discarded Items</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        <button
+            style={{
+              backgroundColor:
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+                  ? "#DB3B14"
+                  : "#ccc",
+              color: "white",
+              padding: "0.8rem 1.5rem",
+              border: "none",
+              borderRadius: "20px",
+              cursor:
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+                  ? "pointer"
+                  : "not-allowed",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              transition: "background-color 0.3s ease, transform 0.2s ease",
+              boxShadow:
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+                  ? "0px 4px 6px rgba(0, 0, 0, 0.1)"
+                  : "none",
+            }}
+            onClick={() => clearDisliked()}
+            disabled={
+              !discardedProducts ||
+              !discardedProducts.items ||
+              discardedProducts.items.length === 0
+            }
+            onMouseEnter={(e) => {
+              if (
+                discardedProducts &&
+                discardedProducts.items &&
+                discardedProducts.items.length > 0
+              ) {
+                e.target.style.transform = "scale(1.05)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+            }}
+          >
+            Clear
+          </button>
+          <div className="horizontal-scroll-container">
+            {discardedProducts.items && discardedProducts.items.length > 0 ? (
+              discardedProducts.items.map((item, idx) => (
+                <div key={idx} className="scroll-item-card">
+                  <img src={item.product.imageUrl} alt={item.product.name} />
+                  <h5>{item.product.name}</h5>
+                  <p>{item.product.brand}</p>
+                  <p>{item.product.price}</p>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <button
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "#DB3B14",
+                        border: "1px solid #DB3B14",
+                        borderRadius: "20px",
+                        padding: "5px 10px",
+                        fontSize: "0.8rem",
+                        cursor: "pointer",
+                        marginRight: "10px",
+                        flex: 1,
+                      }}
+                      onClick={() => removeFromDiscard(item.product_id)}
+                    >
+                      Remove
+                    </button>
+                    <button
+                      style={{
+                        backgroundColor: "#DB3B14",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "20px",
+                        padding: "5px 10px",
+                        fontSize: "0.8rem",
+                        cursor: "pointer",
+                        flex: 1,
+                      }}
+                      onClick={() =>
+                        restoreItem(item.product, item.product_id, false)
+                      }
+                    >
+                      Restore
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div>
+                {isLoggedIn ? (
+                  <p>No discarded items to show.</p>
+                ) : (
+                  <>
+                    <p>Please Login / Register to see your discarded items.</p>
+                    <button
+                      style={{ ...styles.button, marginRight: "10px" }}
+                      onClick={() => navigate("/login")}
+                    >
+                      Login
+                    </button>
+                    <button
+                      style={styles.button}
+                      onClick={() => navigate("/signup")}
+                    >
+                      Signup
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </Modal.Body>
+      </Modal>
+
       <Footer />
     </div>
   );
