@@ -41,6 +41,8 @@ const SwipeBop = () => {
   const [likedModal, setLikedModal] = useState(false);
   const [discardedModal, setDiscardedModal] = useState(false);
   const navigate = useNavigate();
+  const likedScrollRef = useRef(null);
+  const discardedScrollRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -55,6 +57,34 @@ const SwipeBop = () => {
 
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    const el = likedScrollRef.current;
+    if (!likedModal || !el) return;
+
+    const onWheel = (e) => {
+      if (e.deltaY === 0) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [likedModal]);
+
+  useEffect(() => {
+    const el = discardedScrollRef.current;
+    if (!discardedModal || !el) return;
+
+    const onWheel = (e) => {
+      if (e.deltaY === 0) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [discardedModal]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -824,7 +854,7 @@ const SwipeBop = () => {
           >
             Clear
           </button>
-          <div className="horizontal-scroll-container">
+          <div className="horizontal-scroll-container" ref={likedScrollRef}>
             {likedProducts.items && likedProducts.items.length > 0 ? (
               likedProducts.items.map((item, idx) => (
                 <div key={idx}>
@@ -963,7 +993,7 @@ const SwipeBop = () => {
           >
             Clear
           </button>
-          <div className="horizontal-scroll-container">
+          <div className="horizontal-scroll-container" ref={discardedScrollRef}>
             {discardedProducts.items && discardedProducts.items.length > 0 ? (
               discardedProducts.items.map((item, idx) => (
                 <div key={idx} className="scroll-item-card">

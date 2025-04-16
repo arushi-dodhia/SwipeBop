@@ -401,6 +401,7 @@
   overflow-x: auto;
   gap: 16px;
   padding: 10px;
+  scroll-behavior: smooth;
 }
 
 .scroll-item-card {
@@ -409,6 +410,8 @@
   text-align: center;
   border-radius: 8px;
   padding: 10px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .scroll-item-card img {
