@@ -112,7 +112,7 @@ const SwipeBop = () => {
             };
           });
 
-          fetchedProducts[category] = productArray.slice(0, 5);
+          fetchedProducts[category] = productArray;
         }
 
         setProducts(fetchedProducts);
@@ -396,6 +396,7 @@ const SwipeBop = () => {
       brand: item.brand,
       price: item.price,
       category: item.category,
+      url: item.url,
     };
 
     try {
@@ -463,6 +464,7 @@ const SwipeBop = () => {
       brand: item.brand,
       price: item.price,
       category: item.category,
+      url: item.url,
     };
 
     try {
@@ -673,21 +675,34 @@ const SwipeBop = () => {
 
   const restoreItem = (product, productId, liked) => {
     const restoredProduct = { ...product, id: productId };
-    console.log("Restored product:", restoredProduct);
-
+  
     setProducts((prevProducts) => {
       const updatedProducts = { ...prevProducts };
-      const categoryProducts = updatedProducts[restoredProduct.category];
-      categoryProducts.unshift({ ...restoredProduct, hidden: false });
+      console.log(updatedProducts);
+      const category = restoredProduct.category;
+  
+      if (!updatedProducts[category]) return updatedProducts;
+  
+      updatedProducts[category] = [
+        ...updatedProducts[category].filter((p) => p.id !== productId),
+      ];
+      
+      updatedProducts[category] = [
+        { ...restoredProduct, hidden: false },
+        ...updatedProducts[category]
+      ];
+      
+      
       return updatedProducts;
     });
-
+  
     if (liked) {
       removeFromLiked(productId);
     } else {
       removeFromDiscard(productId);
     }
   };
+  
 
   const handleSaveOutfit = async () => {
     if (!isLoggedIn) {
