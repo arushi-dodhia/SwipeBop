@@ -68,7 +68,7 @@ const SwipeBop = () => {
             lang: "en-US",
             currency: "USD",
             q: category,
-            limit: 10,
+            limit: 100,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
@@ -93,7 +93,7 @@ const SwipeBop = () => {
           }
 
           const data = await response.json();
-          console.log(data.products)
+          console.log(data.products);
           const ids = data.products.map((x) => x.product.productSin);
           setProductIds(ids);
           console.log("Fetched product IDs:", ids);
@@ -101,7 +101,9 @@ const SwipeBop = () => {
           const productArray = data.products.map((product) => {
             return {
               id: product.product.productSin,
-              imageUrl: "https://m.media-amazon.com/images/G/01/Shopbop/p/" + product.product.colors[0].images[0].src,
+              imageUrl:
+                "https://m.media-amazon.com/images/G/01/Shopbop/p/" +
+                product.product.colors[0].images[0].src,
               name: product.product.shortDescription,
               brand: product.product.designerName,
               price: product.product.retailPrice.price,
@@ -377,6 +379,16 @@ const SwipeBop = () => {
       alert("Product not found, Please try again later");
       return;
     }
+    if (
+      discardedProducts.items.some(
+        (discardedItem) => discardedItem.product_id === item.id
+      )
+    ) {
+      card.style.transition = "transform 0.3s ease";
+      card.style.transform = "translateX(-1000px) rotate(-30deg)";
+      setTimeout(() => removeCard(productId), 300);
+      return;
+    }
     const product = {
       productSin: item.id,
       imageUrl: item.imageUrl,
@@ -434,6 +446,16 @@ const SwipeBop = () => {
       alert("Product not found, Please try again later");
       return;
     }
+
+    if (
+      likedProducts.items.some((likedItem) => likedItem.product_id === item.id)
+    ) {
+      card.style.transition = "transform 0.3s ease";
+      card.style.transform = "translateX(1000px) rotate(30deg)";
+      setTimeout(() => removeCard(productId), 300);
+      return;
+    }
+
     const product = {
       productSin: item.id,
       imageUrl: item.imageUrl,
@@ -541,7 +563,6 @@ const SwipeBop = () => {
         const result = await res.json();
         setLikedProducts(result);
         console.log("Liked products:", likedProducts);
-        setLikedModal(true);
       } else {
         const error = await res.json();
         console.error("Error fetching liked products:", error);
@@ -568,7 +589,6 @@ const SwipeBop = () => {
         const result = await res.json();
         console.log("Discarded products:", result);
         setDiscardedProducts(result);
-        setDiscardedModal(true);
       } else {
         const error = await res.json();
         console.error("Error fetching discarded products:", error);
@@ -579,6 +599,10 @@ const SwipeBop = () => {
       alert("Error fetching discarded products. Please try again.");
     }
   };
+
+  useEffect(() => {
+    fetchLikedProducts(), fetchDiscardedProducts();
+  }, []);
 
   const removeFromLiked = async (productId) => {
     console.log(userID, productId);
@@ -854,7 +878,10 @@ const SwipeBop = () => {
               marginRight: "10px",
               flex: 1,
             }}
-            onClick={() => fetchDiscardedProducts()}
+            onClick={() => {
+              fetchDiscardedProducts();
+              setDiscardedModal(true);
+            }}
           >
             Discard Pile
           </button>
@@ -869,7 +896,10 @@ const SwipeBop = () => {
               cursor: "pointer",
               flex: 1,
             }}
-            onClick={() => fetchLikedProducts()}
+            onClick={() => {
+              fetchLikedProducts();
+              setLikedModal(true);
+            }}
           >
             Liked Wishlist
           </button>
