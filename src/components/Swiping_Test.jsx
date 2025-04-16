@@ -19,7 +19,7 @@ const styles = {
   },
 };
 
-const SwipeBop = () => {
+const SwipeBop_Test = () => {
   const [products, setProducts] = useState({
     accessories: [],
     pants: [],
@@ -40,6 +40,8 @@ const SwipeBop = () => {
   const [discardedProducts, setDiscardedProducts] = useState([]);
   const [likedModal, setLikedModal] = useState(false);
   const [discardedModal, setDiscardedModal] = useState(false);
+  const [visited, setVisited] = useState([]);
+  const [test, setTest] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +59,8 @@ const SwipeBop = () => {
   }, []);
 
   useEffect(() => {
+    if (isLoggedIn === false) return;
+
     const fetchProducts = async () => {
       setLoading(true);
       try {
@@ -68,7 +72,7 @@ const SwipeBop = () => {
             lang: "en-US",
             currency: "USD",
             q: category,
-            limit: 100,
+            limit: isLoggedIn ? 50 : 100,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
@@ -126,7 +130,126 @@ const SwipeBop = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const fetchOutfitMatch = async () => {
+      if (!likedProducts?.items || likedProducts.items.length === 0) return;
+
+      for (let i = 0; i < likedProducts.items.length; i++) {
+        try {
+          const productId = likedProducts.items[i].product_id;
+          if (visited.includes(productId)) {
+            continue;
+          }
+          setVisited((prev) => [...prev, productId]);
+          console.log(productId);
+          const queryParams = new URLSearchParams({
+            productSin: productId,
+          });
+          console.log(queryParams.toString());
+          const res = await fetch(
+            `http://18.118.186.108:5000/swipebop/outfits?${queryParams.toString()}`,
+            {
+              method: "GET",
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            data.styleColorOutfits.forEach((color) => {
+              if (color.outfits && color.outfits.length > 0) {
+                color.outfits.forEach((outfit) => {
+                  if (outfit.styleColors && outfit.styleColors.length > 0) {
+                    outfit.styleColors.forEach((styleColorItem) => {
+                      if (
+                        styleColorItem.product &&
+                        styleColorItem.product.productSin !== productId &&
+                        !productIds.includes(styleColorItem.product.productSin)
+                      ) {
+                        const outfitProduct = {
+                          id: styleColorItem.product.productSin,
+                          imageUrl:
+                            "https://m.media-amazon.com/images/G/01/Shopbop/p/" +
+                            styleColorItem.image.src,
+                          name: styleColorItem.product.shortDescription,
+                          brand: styleColorItem.product.designerName,
+                          price: styleColorItem.product.retailPrice.price,
+                          url:
+                            "https://shopbop.com/" +
+                            styleColorItem.product.productDetailUrl,
+                        };
+                        console.log(styleColorItem)
+                        if (styleColorItem.product.productCategory == "FOOTWEAR") {
+                          outfitProduct.category = "shoes";
+                          setProducts((prevProducts) => ({
+                            ...prevProducts,
+                            shoes: [...prevProducts.shoes, outfitProduct],
+                          }));
+                          productIds.push(
+                            styleColorItem.product.productSin
+                          );
+                          return;
+                        }
+                        if (styleColorItem.image.modelFirstName == "Accessories") {
+                          outfitProduct.category = "accessories";
+                          setProducts((prevProducts) => ({
+                            ...prevProducts,
+                            accessories: [
+                              ...prevProducts.accessories,
+                              outfitProduct,
+                            ],
+                          }));
+                          productIds.push(
+                            styleColorItem.product.productSin
+                          );
+                          return;
+                        }
+                        if (styleColorItem.product.stretchAmount && !(styleColorItem.product.shortDescription.includes("dress"))) {
+                          outfitProduct.category = "pants";
+                          setProducts((prevProducts) => ({
+                            ...prevProducts,
+                            pants: [...prevProducts.pants, outfitProduct],
+                          }));
+                          productIds.push(
+                            styleColorItem.product.productSin
+                          );
+                          return;
+                        }
+                        outfitProduct.category = "shirts";
+                        setProducts((prevProducts) => ({
+                          ...prevProducts,
+                          shirts: [...prevProducts.shirts, outfitProduct],
+                        }));
+                        productIds.push(
+                          styleColorItem.product.productSin
+                        );
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          } else {
+            const err = await res.json();
+            console.error("Failed to fetch outfit match:", err);
+          }
+        } catch (err) {
+          console.error("Error in fetchOutfitMatch:", err);
+        }
+      }
+    };
+
+    if (isLoggedIn && likedProducts?.items) {
+      fetchOutfitMatch();
+    }
+  }, [likedProducts, isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !userID) return;
+
+    fetchLikedProducts();
+    fetchDiscardedProducts();
+  }, [isLoggedIn, userID]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -221,7 +344,6 @@ const SwipeBop = () => {
   const handleDislike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-
     const outfits = getSelectedProducts();
     const item = outfits.find((product) => product.id == productId);
     if (!item) {
@@ -245,6 +367,7 @@ const SwipeBop = () => {
       brand: item.brand,
       price: item.price,
       category: item.category,
+      url: item.url,
     };
 
     try {
@@ -271,6 +394,8 @@ const SwipeBop = () => {
     } catch (error) {
       console.error("Error discarding product:", error);
     }
+
+    fetchDiscardedProducts();
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(-1000px) rotate(-30deg)";
     setTimeout(() => removeCard(productId), 300);
@@ -312,6 +437,7 @@ const SwipeBop = () => {
       brand: item.brand,
       price: item.price,
       category: item.category,
+      url: item.url,
     };
 
     try {
@@ -339,6 +465,7 @@ const SwipeBop = () => {
       console.error("Error liking product:", error);
     }
 
+    fetchLikedProducts();
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(1000px) rotate(30deg)";
     setTimeout(() => removeCard(productId), 300);
@@ -448,10 +575,6 @@ const SwipeBop = () => {
       alert("Error fetching discarded products. Please try again.");
     }
   };
-
-  useEffect(() => {
-    fetchLikedProducts(), fetchDiscardedProducts();
-  }, []);
 
   const removeFromLiked = async (productId) => {
     console.log(userID, productId);
@@ -1046,4 +1169,4 @@ const SwipeBop = () => {
   );
 };
 
-export default SwipeBop;
+export default SwipeBop_Test;

@@ -21,7 +21,7 @@ const Outfit = ({ outfits, onRemove }) => {
             {outfit.outfit.map((product) => (
               <div key={product.id} className="product-card-2">
                 <div className="product-image-2">
-                  <a href={product.url}>
+                  <a href={product.url} target="_blank" rel="noopener noreferrer">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
