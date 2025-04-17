@@ -2,7 +2,7 @@ import json
 import requests
 
 BASE_URL = "https://api.shopbop.com"
-CATEGORIES = ["pants", "shirts", "dresses", "jackets"]
+CATEGORIES = ["pants", "shirts", "dresses", "jackets", "accessories", "shoes"]
 MAX_OUTFITS = 4
 LIMIT_PER_CATEGORY = 250 // len(CATEGORIES)
 
@@ -26,7 +26,7 @@ def search_products(query, limit=40, offset=0):
     r = requests.get(url, headers=base_headers, params=params)
     return r.json().get("products", [])
 
-def extract_product_features(product):
+def extract_product_features(product, category):
     try:
         img_path = product.get("colors", [])[0].get("images", [])[0].get("src", "")
         img_url = "https://www.shopbop.com" + img_path
@@ -38,7 +38,8 @@ def extract_product_features(product):
         "brand": product.get("designerName", ""),
         "name": product.get("shortDescription", ""),
         "price": product.get("retailPrice", {}).get("usdPrice", ""),
-        "category": product.get("productCategory", "N/A"),
+        "category": category,
+        "color": product.get("colors", [])[0].get("name", ""),
         "img_url": img_url
     }
 
@@ -55,6 +56,9 @@ def fetch_outfits(product_sin):
         for outfit in styleColor.get("outfits", []):
             for item in outfit.get("styleColors", []):
                 product = item.get("product", {})
+                product_id = product.get("productSin", "")
+                if product_id == product_sin:
+                    continue
                 if not product:
                     continue
 
@@ -64,12 +68,14 @@ def fetch_outfits(product_sin):
                 except:
                     img_url = ""
 
+                color_info = product.get("colors", [])[0] if product.get("colors") else {}
+
                 outfit_item = {
-                    "product_id": product.get("productSin", ""),
+                    "product_id": product_id,
                     "brand": product.get("designerName", ""),
                     "name": product.get("shortDescription", ""),
                     "price": product.get("retailPrice", {}).get("usdPrice", ""),
-                    "category": product.get("productCategory", "N/A"),
+                    "color": color_info.get("name", ""),
                     "img_url": img_url
                 }
 
@@ -95,7 +101,7 @@ def main():
                 if not product:
                     continue
                 sin = product.get("productSin", "")
-                base_info = extract_product_features(product)
+                base_info = extract_product_features(product, category)
                 outfit_items = fetch_outfits(sin)
                 if outfit_items:
                     entry = base_info
