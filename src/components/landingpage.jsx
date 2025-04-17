@@ -171,7 +171,7 @@ const LandingPage = () => {
   const fetchFashionImage = async () => {
     setIsLoading(true);
     try {
-      const category = 'dresses';
+      const category = 'tops';
       const queryParams = new URLSearchParams({
         lang: 'en-US',
         currency: 'USD',
@@ -184,7 +184,7 @@ const LandingPage = () => {
         dept: 'WOMENS',
       });
 
-      const response = await fetch(`http://3.142.196.127:5000/swipebop/images?${queryParams}`, {
+      const response = await fetch(`http://18.118.186.108:5000/swipebop/images?${queryParams}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -269,7 +269,7 @@ const LandingPage = () => {
                   <img
                     src={image1 || fallbackImage}
                     alt="Fashion item"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '60%', height: '30%', objectFit: 'cover' }}
                     onError={(e) => {
                       console.error('Image failed to load:', e.target.src);
                       e.target.src = fallbackImage;
@@ -300,7 +300,7 @@ const LandingPage = () => {
                 <img
                   src={image2 || fallbackImage}
                   alt="Fashion item"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '60%', height: '30%', objectFit: 'cover' }}
                   onError={(e) => {
                     console.error('Image failed to load:', e.target.src);
                     e.target.src = fallbackImage;
