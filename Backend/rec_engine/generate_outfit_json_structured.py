@@ -2,15 +2,16 @@ import json
 import requests
 
 BASE_URL = "https://api.shopbop.com"
-CATEGORIES = ["pants", "shirts", "dresses", "jackets", "accessories", "shoes"]
+CATEGORIES = ["pants", "shirts", "accessories", "shoes"]
 MAX_OUTFITS = 4
-LIMIT_PER_CATEGORY = 250 // len(CATEGORIES)
+LIMIT_PER_CATEGORY = 1000 // len(CATEGORIES)
 
 base_headers = {
     "accept": "application/json",
     "Client-Id": "Shopbop-UW-Team1-2024",
     "Client-Version": "1.0.0"
 }
+
 
 def search_products(query, limit=40, offset=0):
     url = f"{BASE_URL}/public/search"
@@ -26,6 +27,7 @@ def search_products(query, limit=40, offset=0):
     r = requests.get(url, headers=base_headers, params=params)
     return r.json().get("products", [])
 
+
 def extract_product_features(product, category):
     try:
         img_path = product.get("colors", [])[0].get("images", [])[0].get("src", "")
@@ -40,8 +42,10 @@ def extract_product_features(product, category):
         "price": product.get("retailPrice", {}).get("usdPrice", ""),
         "category": category,
         "color": product.get("colors", [])[0].get("name", ""),
-        "img_url": img_url
+        "img_url": img_url,
+        "url": product.get("productDetailUrl")
     }
+
 
 def fetch_outfits(product_sin):
     url = f"{BASE_URL}/public/products/{product_sin}/outfits"
@@ -57,6 +61,7 @@ def fetch_outfits(product_sin):
             for item in outfit.get("styleColors", []):
                 product = item.get("product", {})
                 product_id = product.get("productSin", "")
+
                 if product_id == product_sin:
                     continue
                 if not product:
@@ -76,6 +81,7 @@ def fetch_outfits(product_sin):
                     "name": product.get("shortDescription", ""),
                     "price": product.get("retailPrice", {}).get("usdPrice", ""),
                     "color": color_info.get("name", ""),
+                    "url": "https://shopbop.com" + product.get("productDetailUrl", ""),
                     "img_url": img_url
                 }
 
@@ -83,6 +89,7 @@ def fetch_outfits(product_sin):
                 if len(outfits) == MAX_OUTFITS:
                     return outfits
     return outfits
+
 
 def main():
     data = []
@@ -111,6 +118,7 @@ def main():
 
     with open("nested_outfit_dataset.json", "w") as f:
         json.dump(data, f, indent=2)
+
 
 if __name__ == "__main__":
     main()
