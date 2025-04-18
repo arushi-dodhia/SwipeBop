@@ -508,7 +508,7 @@ def itemRecommendation(user_id):
     # if not liked_product_ids:
     #     continue
 
-    search_url = "http://18.118.186.108:5000/swipebop/search_filtered?limit=100"
+    search_url = "http://18.118.186.108:5000/swipebop/search_filtered?limit=10"
     products_response = requests.get(search_url)
     products_json = products_response.json()
 

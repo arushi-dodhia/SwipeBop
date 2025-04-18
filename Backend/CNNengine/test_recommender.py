@@ -1,7 +1,7 @@
 import requests
 from cnn_recommender import build_catalog_embeddings, build_user_embedding, recommend_products
 
-api_url = "http://18.118.186.108:5000/swipebop/search_filtered?limit=100"
+api_url = "http://18.118.186.108:5000/swipebop/search_filtered?limit=10"
 response = requests.get(api_url)
 products_json = response.json()
 
