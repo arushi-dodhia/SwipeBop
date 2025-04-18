@@ -9,7 +9,7 @@ import outfit
 import liked
 
 # rec engine stuff
-from CNNengine.cnn_recommender import build_catalog_embeddings, build_user_embedding, recommend_products
+from CNNengine.recommender import load_all_embeddings, build_user_embedding, recommend_products
 
 app = Flask(__name__)
 CORS(app)
@@ -499,27 +499,23 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+catalog_embeddings = load_all_embeddings()
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
     liked_items_data = liked.getLikedItems(user_id)
-    liked_product_ids = [item['product']['productSin'] for item in liked_items_data]
+    liked_product_sins = [item['product']['productSin'] for item in liked_items_data]
 
     # if have no items liked ifs wtvr
     # if not liked_product_ids:
     #     continue
 
-    search_url = "http://18.118.186.108:5000/swipebop/search_filtered?limit=10"
-    products_response = requests.get(search_url)
-    products_json = products_response.json()
-
-    catalog_embeddings = build_catalog_embeddings(products_json)
-    user_emb = build_user_embedding(liked_product_ids, catalog_embeddings)
+    user_emb = build_user_embedding(liked_product_sins, catalog_embeddings)
     if user_emb is None:
-        print("bad thing happened")
-    
-    recommendations = recommend_products(user_emb, catalog_embeddings, exclude_ids=liked_product_ids, top_n=10)
-    recommended_product_ids = [pid for pid, score in recommendations]
+        return jsonify({"error": "No valid liked items found"}), 400
+
+    recommendations = recommend_products(user_emb, catalog_embeddings, exclude_ids=liked_product_sins, top_n=10)
+    rec_product_sins = [pid for pid, score in recommendations]
 
     return jsonify({
-        "recommended_productSin": recommended_product_ids
+        "recommendations": rec_product_sins
     })
