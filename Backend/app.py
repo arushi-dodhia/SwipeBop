@@ -506,13 +506,22 @@ def itemRecommendation(user_id):
     if not liked_items_data:
         return jsonify({"error": "No liked items found for user"}), 400
 
-    liked_product_sins = [item['product']['productSin'] for item in liked_items_data]
+    liked_product_sins = []
+
+    for item in liked_items_data:
+        if 'product' in item and 'productSin' in item['product']:
+            liked_product_sins.append(item['product']['productSin'])
+        elif 'productSin' in item:
+            liked_product_sins.append(item['productSin'])
+
     if not liked_product_sins:
         return jsonify({"error": "No valid liked products"}), 400
+
     user_emb = build_user_embedding(liked_product_sins, catalog_embeddings)
 
     if user_emb is None:
         return jsonify({"error": "Could not build user embedding"}), 400
+
     recommendations = recommend_products(user_emb, catalog_embeddings, exclude_ids=liked_product_sins, top_n=10)
     rec_product_sins = [pid for pid, score in recommendations]
 
