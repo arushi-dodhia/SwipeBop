@@ -43,7 +43,7 @@ def check_connectivity():
 # User likes an item
 def likeItem(user_id, product):
     time = datetime.now().isoformat()
-    product_id = product['productSin']
+    product_id = product
 
     try:
         table.put_item(
