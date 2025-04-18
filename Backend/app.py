@@ -499,23 +499,23 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-catalog_embeddings = load_all_embeddings()
-@app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
-def itemRecommendation(user_id):
-    liked_items_data = liked.getLikedItems(user_id)
-    liked_product_sins = [item['product']['productSin'] for item in liked_items_data]
+# catalog_embeddings = load_all_embeddings()
+# @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
+# def itemRecommendation(user_id):
+#     liked_items_data = liked.getLikedItems(user_id)
+#     liked_product_sins = [item['product']['productSin'] for item in liked_items_data]
 
-    # if have no items liked ifs wtvr
-    # if not liked_product_ids:
-    #     continue
+#     # if have no items liked ifs wtvr
+#     # if not liked_product_ids:
+#     #     continue
 
-    user_emb = build_user_embedding(liked_product_sins, catalog_embeddings)
-    if user_emb is None:
-        return jsonify({"error": "No valid liked items found"}), 400
+#     user_emb = build_user_embedding(liked_product_sins, catalog_embeddings)
+#     if user_emb is None:
+#         return jsonify({"error": "No valid liked items found"}), 400
 
-    recommendations = recommend_products(user_emb, catalog_embeddings, exclude_ids=liked_product_sins, top_n=10)
-    rec_product_sins = [pid for pid, score in recommendations]
+#     recommendations = recommend_products(user_emb, catalog_embeddings, exclude_ids=liked_product_sins, top_n=10)
+#     rec_product_sins = [pid for pid, score in recommendations]
 
-    return jsonify({
-        "recommendations": rec_product_sins
-    })
+#     return jsonify({
+#         "recommendations": rec_product_sins
+#     })
