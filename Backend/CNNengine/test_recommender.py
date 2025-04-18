@@ -1,7 +1,7 @@
 import requests
 from cnn_recommender import build_catalog_embeddings, build_user_embedding, recommend_products
 
-api_url = "http://localhost:5000/swipebop/search_filtered?q=shirts&minPrice=0&maxPrice=1000"
+api_url = "http://18.118.186.108:5000/swipebop/search_filtered?q=shirts&limit=2"
 response = requests.get(api_url)
 products_json = response.json()
 

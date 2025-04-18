@@ -5,8 +5,8 @@ from io import BytesIO
 import random
 import time
 
-# IMAGES_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/images"
-IMAGES_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/images"
+IMAGES_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/images"
+# IMAGES_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/images"
 API_URL = "http://18.118.186.108:5000/swipebop/search_filtered"
 
 def fetch_and_save_image(product_sin, image_url):

@@ -5,11 +5,11 @@ import torchvision.models as models
 from PIL import Image
 import numpy as np
 
-# IMAGES_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/images"
-# EMBEDDINGS_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/embeddings"
+IMAGES_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/images"
+EMBEDDINGS_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/embeddings"
 
-IMAGES_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/images"
-EMBEDDINGS_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/embeddings"
+# IMAGES_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/images"
+# EMBEDDINGS_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/embeddings"
 
 mobilenet = models.mobilenet_v2(weights="DEFAULT")
 mobilenet = torch.nn.Sequential(*list(mobilenet.children())[:-1])
@@ -24,7 +24,9 @@ def generate_embedding(img_path):
     img = Image.open(img_path).convert('RGB')
     img_tensor = transform(img).unsqueeze(0)
     with torch.no_grad():
-        embedding = mobilenet(img_tensor).squeeze().numpy()
+        features = mobilenet(img_tensor)  # (1, 1280, 7, 7)
+        features = features.mean(dim=[2, 3])  # Average over 7x7 grid
+        embedding = features.squeeze().numpy()  # Now (1280,)
     return embedding
 
 def generate_and_save_embeddings():

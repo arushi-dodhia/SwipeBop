@@ -109,9 +109,7 @@ def removeAllLiked(user_id):
         raise Exception(f"Delete failed: {e.response['Error']['Message']}")
 
 # Add an item and check for item
-likeItem("fakeUser1", "1521306412")
-# likeItem("200", "1521306413")
-# likeItem("200", "1521306414")
+# likeItem("fakeUser1", "1521306412")
 # getLikedItems("200")
 # getLikedItem("200", "1521306413")
 # removeLikedItem("200", "1521306412")
