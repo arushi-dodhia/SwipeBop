@@ -170,7 +170,7 @@ def search_products():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -508,7 +508,7 @@ def itemRecommendation(user_id):
         return jsonify({"error": "No liked items found for user"}), 400
 
     liked_sins = []
-    for item in liked_items:
+    for item in liked_items.get('items', []):
         prod = item.get('product', {})
         if 'product' in prod and isinstance(prod['product'], dict):
             prod = prod['product']

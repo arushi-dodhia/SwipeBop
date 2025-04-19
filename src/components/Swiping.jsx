@@ -87,6 +87,8 @@ const SwipeBop = () => {
   }, [discardedModal]);
 
   useEffect(() => {
+    if (isLoggedIn === false) return;
+
     const fetchProducts = async () => {
       setLoading(true);
       try {
@@ -98,7 +100,7 @@ const SwipeBop = () => {
             lang: "en-US",
             currency: "USD",
             q: category,
-            limit: 100,
+            limit: isLoggedIn ? 5: 100,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
@@ -156,7 +158,35 @@ const SwipeBop = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!likedProducts?.items || likedProducts.items.length === 0) return;
+      try {
+        const response = await fetch(
+          `https://swipebop-backend.online/swipebop/recommendations/${userID}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        if (!response.ok) {
+          throw new Error("Failed to fetch recommendations");
+        }
+        const data = await response.json();
+        console.log("Recommendations:", data);
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+      }
+    }
+
+    if (isLoggedIn && likedProducts?.items) {
+      fetchRecommendations();
+    }
+    
+  }, [isLoggedIn, likedProducts]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -489,8 +519,11 @@ const SwipeBop = () => {
   };
 
   useEffect(() => {
-    fetchLikedProducts(), fetchDiscardedProducts();
-  }, []);
+      if (!isLoggedIn || !userID) return;
+  
+      fetchLikedProducts();
+      fetchDiscardedProducts();
+    }, [isLoggedIn, userID]);
 
   const removeFromLiked = async (productId) => {
     console.log(userID, productId);
