@@ -508,7 +508,7 @@ def itemRecommendation(user_id):
         return jsonify({"error": "No liked items found for user"}), 400
 
     liked_sins = []
-    for item in liked_items.get('items', []):
+    for item in liked_items['items']:
         prod = item.get('product', {})
         if 'product' in prod and isinstance(prod['product'], dict):
             prod = prod['product']
