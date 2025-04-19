@@ -512,8 +512,8 @@ def itemRecommendation(user_id):
         prod = item.get('product', {})
         if 'product' in prod and isinstance(prod['product'], dict):
             prod = prod['product']
-        if 'productSin' in prod:
-            liked_sins.append(prod['productSin'])
+        if 'product_id' in prod:
+            liked_sins.append(prod['product_id'])
 
     if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400
