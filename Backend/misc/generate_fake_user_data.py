@@ -3,14 +3,14 @@ import time
 import requests
 from liked import likeItem
 
-DESIRED_COUNT = 500
+DESIRED_COUNT = 100
 
-def gather_product_ids(desired_count=500):
-    queries = ["dress", "shoes", "jeans", "shirt", "bag", "coat"]
-    colors = ["Black"]
-    all_ids = set()
+def gather_product_data(desired_count=500):
+    queries = ["shoes", "jeans", "shirt", "coat"]
+    colors = ["Black", "Red"]
+    all_products = []
 
-    while len(all_ids) < desired_count:
+    while len(all_products) < desired_count:
         query = random.choice(queries)
         color = random.choice(colors)
         offset = random.randint(0, 2000)
@@ -36,35 +36,43 @@ def gather_product_ids(desired_count=500):
 
             products = data.get("products", [])
             for p in products:
-                if "productSin" in p:
-                    all_ids.add(p["productSin"])
+                if p.get("productSin"):
+                    all_products.append(p)
 
             print(f"Fetched {len(products)} products for query='{query}', color='{color}'. "
-                  f"Total unique so far: {len(all_ids)}")
+                  f"Total collected so far: {len(all_products)}")
 
         except Exception as e:
             print(f"Error retrieving products (query={query}, color={color}, offset={offset}): {e}")
         time.sleep(0.5)
 
-    return all_ids
-
+    return all_products[:desired_count]
 
 def main():
-    user_id = "fakeUser1"
-    product_ids = gather_product_ids(DESIRED_COUNT)
+    user_id = "fakeUserA"
+    products = gather_product_data(DESIRED_COUNT)
 
-    print(f"\nInserting {len(product_ids)} total items into 'liked' for user='{user_id}'\n")
+    print(f"\nInserting {len(products)} total items into 'liked' for user='{user_id}'\n")
 
     inserted_count = 0
-    for pid in product_ids:
+    for p in products:
         try:
-            likeItem(user_id, pid)
+            # 👇 IMPORTANT: Wrap everything under 'product'
+            wrapped_product = {
+                "product": {
+                    "productSin": str(p.get("productSin")),
+                    "shortDescription": p.get("shortDescription", ""),
+                    "designerName": p.get("designerName", ""),
+                    "price": str(p.get("price", "")),
+                    "imageURL": p.get("imageURL", "")
+                }
+            }
+            likeItem(user_id, wrapped_product)
             inserted_count += 1
         except Exception as e:
-            print(f"Error calling likeItem for productSin={pid}: {e}")
+            print(f"Error calling likeItem for productSin={p.get('productSin')}: {e}")
 
     print(f"\nSuccessfully inserted {inserted_count} items for user '{user_id}'.\n")
-
 
 if __name__ == "__main__":
     main()
