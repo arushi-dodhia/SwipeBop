@@ -507,7 +507,6 @@ def itemRecommendation(user_id):
     if not liked_items:
         return jsonify({"error": "No liked items found for user"}), 400
 
-    # unwrap possible double‑nesting
     liked_sins = []
     for item in liked_items:
         prod = item.get('product', {})
