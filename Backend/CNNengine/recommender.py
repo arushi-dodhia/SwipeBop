@@ -47,3 +47,4 @@ def hybrid_recommend(user_emb, catalog, exclude_ids, top_k=20, final_n=10, rando
     picks = sample(top_pids[:best_n], best_n)
     picks += sample(top_pids[best_n:], final_n - best_n)
     return picks
+catalog_embeddings = load_all_embeddings()
