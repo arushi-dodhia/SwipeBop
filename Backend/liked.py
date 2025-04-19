@@ -42,21 +42,18 @@ def check_connectivity():
 
 # User likes an item
 def likeItem(user_id, product):
-    time = datetime.now().isoformat()
-    product_id = product
-
-    try:
-        table.put_item(
-            Item = {
-                'user_id': user_id,
-                'product_id': product_id,
-                'time': time,
-                'product': product
-            }
-        )
-        return time
-    except ClientError as e:
-        raise Exception(f"Unable to insert item: {e.response['Error']['Message']}")
+    time_str = datetime.now().isoformat()
+    # if someone _did_ wrap it, strip off the extra layer:
+    if 'product' in product and isinstance(product['product'], dict):
+        product = product['product']
+    product_id = product['productSin']
+    table.put_item(Item={
+        'user_id':     user_id,
+        'product_id':  product_id,
+        'time':        time_str,
+        'product':     product,   # now a flat dict
+    })
+    return time_str
 
 # Get all items liked by a user
 def getLikedItems(user_id):

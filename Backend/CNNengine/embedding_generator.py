@@ -38,7 +38,7 @@ def generate_and_save_embeddings():
             product_sin = filename.split(".")[0]
             emb_path = os.path.join(EMBEDDINGS_DIR, f"{product_sin}.npy")
             if os.path.exists(emb_path):
-                continue  # Already embedded
+                continue
 
             img_path = os.path.join(IMAGES_DIR, filename)
             try:

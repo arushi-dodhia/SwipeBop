@@ -507,18 +507,15 @@ def itemRecommendation(user_id):
         return jsonify({"error": "No liked items found for user"}), 400
 
     liked_product_sins = []
-
     for item in liked_items_data:
         if 'product' in item and 'productSin' in item['product']:
             liked_product_sins.append(item['product']['productSin'])
         elif 'productSin' in item:
             liked_product_sins.append(item['productSin'])
-
     if not liked_product_sins:
         return jsonify({"error": "No valid liked products"}), 400
-
+    
     user_emb = build_user_embedding(liked_product_sins, catalog_embeddings)
-
     if user_emb is None:
         return jsonify({"error": "Could not build user embedding"}), 400
 
