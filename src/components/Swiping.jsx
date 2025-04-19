@@ -107,7 +107,7 @@ const SwipeBop = () => {
           });
 
           const response = await fetch(
-            `http://18.118.186.108:5000/swipebop/search?${queryParams}`,
+            `https://swipebop-backend.online/swipebop/search?${queryParams}`,
             {
               method: "GET",
               headers: {
@@ -251,7 +251,11 @@ const SwipeBop = () => {
   const handleDislike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-
+    if (!isLoggedIn) {
+      card.style.transition = "transform 0.3s ease";
+      card.style.transform = "translateX(-1000px) rotate(-30deg)";
+      setTimeout(() => removeCard(productId), 300);
+    }
     const outfits = getSelectedProducts();
     const item = outfits.find((product) => product.id == productId);
     if (!item) {
@@ -279,7 +283,7 @@ const SwipeBop = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/discard/insert",
+        "https://swipebop-backend.online/swipebop/discard/insert",
         {
           method: "POST",
           headers: {
@@ -319,6 +323,11 @@ const SwipeBop = () => {
   const handleLike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
+    if (!isLoggedIn) {
+      card.style.transition = "transform 0.3s ease";
+      card.style.transform = "translateX(1000px) rotate(30deg)";
+      setTimeout(() => removeCard(productId), 300);
+    }
     const outfits = getSelectedProducts();
     const item = outfits.find((product) => product.id == productId);
     if (!item) {
@@ -346,7 +355,7 @@ const SwipeBop = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/liked/insert",
+        "https://swipebop-backend.online/swipebop/liked/insert",
         {
           method: "POST",
           headers: {
@@ -430,7 +439,7 @@ const SwipeBop = () => {
   const fetchLikedProducts = async () => {
     try {
       const res = await fetch(
-        `http://18.118.186.108:5000/swipebop/liked/${userID}`,
+        `https://swipebop-backend.online/swipebop/liked/${userID}`,
         {
           method: "GET",
           headers: {
@@ -456,7 +465,7 @@ const SwipeBop = () => {
   const fetchDiscardedProducts = async () => {
     try {
       const res = await fetch(
-        `http://18.118.186.108:5000/swipebop/discard/${userID}`,
+        `https://swipebop-backend.online/swipebop/discard/${userID}`,
         {
           method: "GET",
           headers: {
@@ -487,7 +496,7 @@ const SwipeBop = () => {
     console.log(userID, productId);
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/liked/delete",
+        "https://swipebop-backend.online/swipebop/liked/delete",
         {
           method: "POST",
           headers: {
@@ -520,7 +529,7 @@ const SwipeBop = () => {
   const removeFromDiscard = async (productId) => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/discard/delete",
+        "https://swipebop-backend.online/swipebop/discard/delete",
         {
           method: "POST",
           headers: {
@@ -594,7 +603,7 @@ const SwipeBop = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/insert",
+        "https://swipebop-backend.online/swipebop/outfits/insert",
         {
           method: "POST",
           headers: {
@@ -633,7 +642,7 @@ const SwipeBop = () => {
   const clearLiked = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000//swipebop/liked/delete_all",
+        "https://swipebop-backend.online//swipebop/liked/delete_all",
         {
           method: "POST",
           headers: {
@@ -661,7 +670,7 @@ const SwipeBop = () => {
   const clearDisliked = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000//swipebop/discard/delete_all",
+        "https://swipebop-backend.online//swipebop/discard/delete_all",
         {
           method: "POST",
           headers: {

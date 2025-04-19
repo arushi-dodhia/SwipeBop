@@ -151,7 +151,7 @@ const Closet = () => {
   const fetchOutfits = async (userID) => {
     try {
       const response = await fetch(
-        `http://18.118.186.108:5000/swipebop/outfits/${userID}`
+        `https://swipebop-backend.online/swipebop/outfits/${userID}`
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -169,7 +169,7 @@ const Closet = () => {
   const removeOutfit = async (outfitId) => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/delete",
+        "https://swipebop-backend.online/swipebop/outfits/delete",
         {
           method: "POST",
           headers: {
@@ -197,7 +197,7 @@ const Closet = () => {
   const clearCloset = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/delete_all",
+        "https://swipebop-backend.online/swipebop/outfits/delete_all",
         {
           method: "POST",
           headers: {

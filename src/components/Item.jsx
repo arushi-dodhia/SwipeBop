@@ -60,10 +60,6 @@ const Item = forwardRef(({
   });
 
   const onDislike = () => {
-    if (!isLoggedIn) {
-      alert("Please log in to discard item.");
-      return;
-    }
     handleClose();
     handleDislike(productId);
   };
@@ -76,10 +72,6 @@ const Item = forwardRef(({
   // };
 
   const onLike = () => {
-    if (!isLoggedIn) {
-      alert("Please log in to like item.");
-      return;
-    }
     handleClose();
     handleLike(productId);
   };

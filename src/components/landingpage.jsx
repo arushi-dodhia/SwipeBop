@@ -184,7 +184,7 @@ const LandingPage = () => {
         dept: 'WOMENS',
       });
 
-      const response = await fetch(`http://18.118.186.108:5000/swipebop/images?${queryParams}`, {
+      const response = await fetch(`https://swipebop-backend.online/swipebop/images?${queryParams}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',

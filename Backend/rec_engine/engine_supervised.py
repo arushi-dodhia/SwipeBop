@@ -92,7 +92,7 @@ def train_model(X, y):
     return model, scaler_X, scaler_y
 
 # ================= RECOMMENDATION =================
-def recommend(base_product, candidates, model, scaler_X, scaler_y, le_dict, top_k=3):
+def recommend(base_product, candidates, model, scaler_X, scaler_y, le_dict, top_k=4):
     base_vec = np.concatenate([
         extract_structured_features(base_product, le_dict),
         extract_image_embedding(base_product.get("img_url", ""))
@@ -116,18 +116,22 @@ def recommend(base_product, candidates, model, scaler_X, scaler_y, le_dict, top_
 # ================= MAIN =================
 if __name__ == "__main__":
     data = load_json("nested_outfit_dataset.json")
-    X, y, le_dict = build_dataset(data)
+    # x, y, le_dict = build_dataset(data)
 
-    model, scaler_X, scaler_y = train_model(X, y)
+    # model, scaler_x, scaler_y = train_model(x, y)
 
-    joblib.dump(model, "model_rf.pkl")
-    joblib.dump(scaler_X, "scaler_X.pkl")
-    joblib.dump(scaler_y, "scaler_y.pkl")
-    joblib.dump(le_dict, "label_encoders.pkl")
+    # joblib.dump(model, "model_rf.pkl")
+    # joblib.dump(scaler_x, "scaler_x.pkl")
+    # joblib.dump(scaler_y, "scaler_y.pkl")
+    # joblib.dump(le_dict, "label_encoders.pkl")
 
+    model = joblib.load("model_rf.pkl")
+    scaler_x = joblib.load("scaler_X.pkl")
+    scaler_y = joblib.load("scaler_y.pkl")
+    le_dict = joblib.load("label_encoder.pkl")
     base_item = data[0]
     candidates = [item for d in data[50:100] for item in d.get("outfits", [])]
-    recommendations = recommend(base_item, candidates, model, scaler_X, scaler_y, le_dict)
+    recommendations = recommend(base_item, candidates, model, scaler_x, scaler_y, le_dict)
 
     print("\nBase Item:", base_item["name"])
     print("\nRecommended Outfit Items:")
