@@ -1,4 +1,3 @@
-# scheduler.py
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 import image_downloader

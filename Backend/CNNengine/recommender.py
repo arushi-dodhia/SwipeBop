@@ -3,7 +3,6 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from random import sample
 
-
 EMBEDDINGS_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/embeddings"
 # EMBEDDINGS_DIR = "/Users/raihan/Desktop/classes/SwipeBop/Backend/CNNengine/embeddings"
 
@@ -33,17 +32,18 @@ def build_user_embedding(liked_product_sins, catalog_embeddings):
 #     return sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
 def hybrid_recommend(user_emb, catalog, exclude_ids, top_k=20, final_n=10, random_frac=0.3):
-    # get the 20 most similar:
-    top20 = sorted(
-        ((pid, cosine_similarity([user_emb],[emb])[0][0]) for pid,emb in catalog.items()
-         if pid not in exclude_ids),
-        key=lambda x: x[1], reverse=True
-    )[:top_k]
-    top_pids = [pid for pid,_ in top20]
-    # pick 70% from the very best, 30% at random from the rest:
-    from math import floor
-    best_n = floor(final_n * (1 - random_frac))
-    recs = sample(top_pids[:best_n], best_n)
-    # and  the rest from the lower‐ranked top20
-    other = sample(top_pids[best_n:], final_n - best_n)
-    return recs + other
+    # 1) score all, exclude likes
+    sims = []
+    for pid, emb in catalog.items():
+        if pid in exclude_ids:
+            continue
+        sims.append((pid, cosine_similarity([user_emb],[emb])[0][0]))
+    # 2) take top_k
+    sims.sort(key=lambda x: x[1], reverse=True)
+    top_pids = [pid for pid,_ in sims[:top_k]]
+    # 3) mix best + random
+    from random import sample
+    best_n = int(final_n * (1 - random_frac))
+    picks = sample(top_pids[:best_n], best_n)
+    picks += sample(top_pids[best_n:], final_n - best_n)
+    return picks
