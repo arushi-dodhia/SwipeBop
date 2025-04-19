@@ -9,7 +9,9 @@ import outfit
 import liked
 
 # rec engine stuff
-from CNNengine.recommender import load_all_embeddings, build_user_embedding, recommend_products
+import scheduler
+from CNNengine.recommender import catalog_embeddings, build_user_embedding, hybrid_recommend
+
 
 app = Flask(__name__)
 CORS(app)
@@ -499,29 +501,37 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-catalog_embeddings = load_all_embeddings()
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
-    liked_items_data = liked.getLikedItems(user_id)
-    if not liked_items_data:
+    liked_items = liked.getLikedItems(user_id)
+    if not liked_items:
         return jsonify({"error": "No liked items found for user"}), 400
 
-    liked_product_sins = []
-    for item in liked_items_data:
-        if 'product' in item and 'productSin' in item['product']:
-            liked_product_sins.append(item['product']['productSin'])
-        elif 'productSin' in item:
-            liked_product_sins.append(item['productSin'])
-    if not liked_product_sins:
+    # unwrap possible double‑nesting
+    liked_sins = []
+    for item in liked_items:
+        prod = item.get('product', {})
+        if 'product' in prod and isinstance(prod['product'], dict):
+            prod = prod['product']
+        if 'productSin' in prod:
+            liked_sins.append(prod['productSin'])
+
+    if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400
-    
-    user_emb = build_user_embedding(liked_product_sins, catalog_embeddings)
+
+    user_emb = build_user_embedding(liked_sins, catalog_embeddings)
     if user_emb is None:
         return jsonify({"error": "Could not build user embedding"}), 400
 
-    recommendations = recommend_products(user_emb, catalog_embeddings, exclude_ids=liked_product_sins, top_n=10)
-    rec_product_sins = [pid for pid, score in recommendations]
+    recs = hybrid_recommend(
+        user_emb,
+        catalog_embeddings,
+        exclude_ids=liked_sins,
+        top_k=20,
+        final_n=10,
+        random_frac=0.3
+    )
+    return jsonify({"recommendations": recs})
 
-    return jsonify({
-        "recommendations": rec_product_sins
-    })
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
