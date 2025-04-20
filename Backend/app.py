@@ -7,9 +7,10 @@ import sys
 import discard
 import outfit
 import liked
+from datetime import datetime
 
 # rec engine stuff
-import scheduler
+# import scheduler
 from CNNengine.recommender import catalog_embeddings, build_user_embedding, hybrid_recommend
 
 
@@ -170,7 +171,7 @@ def search_products():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        "limit": limit,
+        # "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -484,9 +485,6 @@ def deleteLiked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-
 @app.route('/swipebop/liked/delete_all', methods=['POST'])
 def delete_all_liked():
     data = request.json
@@ -525,7 +523,7 @@ def fetch_product_summary(product_sin, lang="en-US"):
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
     liked_items = liked.getLikedItems(user_id)
-    liked_sins = [row["product_id"] for row in liked_items if "product_id" in row]
+    liked_sins  = [row["product_id"] for row in liked_items if "product_id" in row]
 
 
     if not liked_sins:
@@ -547,7 +545,7 @@ def itemRecommendation(user_id):
         if prod:
             rec_wrapped.append({
                 "product":    prod,
-                "time":       datetime.utcnow().isoformat(),
+                "time":       datetime.now().isoformat(),
                 "user_id":    user_id,
                 "product_id": sin
             })
