@@ -4,7 +4,7 @@ import requests
 from liked import likeItem
 from datetime import datetime
 
-DESIRED_COUNT = 100
+DESIRED_COUNT = 400
 
 def gather_product_data(desired_count=500):
     queries = ["shoes", "jeans", "shirt", "coat"]
