@@ -498,7 +498,12 @@ def delete_all_liked():
         return jsonify({"error": str(e)}), 500
     
 
-def _extract_category(prod):
+def _extract_category(prod) -> str | None:
+    if prod.get("categoryName"):
+        return prod["categoryName"]
+    if prod.get("heroCategoryName"):
+        return prod["heroCategoryName"]
+
     pc = prod.get("productCategory")
     if pc:
         if isinstance(pc, dict):
@@ -517,7 +522,8 @@ def _extract_category(prod):
     cb = prod.get("categoryBreadcrumb")
     if isinstance(cb, list) and cb:
         return cb[0].get("name")
-    return None        
+
+    return None     
 
 def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     url = f"{baseURL}/public/products/{product_sin}"
