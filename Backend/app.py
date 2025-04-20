@@ -500,7 +500,7 @@ def delete_all_liked():
         return jsonify({"error": str(e)}), 500
     
 def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
-    url    = f"{baseURL}/public/products/{product_sin}"
+    url = f"{baseURL}/public/products/{product_sin}"
     params = {
         "dept": dept,
         "lang": lang,
@@ -508,24 +508,27 @@ def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     }
 
     raw = fetch_from_shopbop(url, params)
-    print(json.dumps(raw)[:800], file=sys.stderr)
     if not isinstance(raw, dict):
-        return None        # network or status error
+        return None
     if "product" in raw:
         prod = raw["product"]
+    elif "products" in raw and raw["products"]:
+        prod = raw["products"][0]
     else:
-        prod = raw 
+        return None
 
     first_color = (prod.get("colors") or [{}])[0]
-    first_img   = (first_color.get("images") or [{}])[0]
+    first_img   = (first_color.get("images") or [{}])[0].get("src", "")
+
+    img_url = baseIMGURL + first_img.lstrip("/")
 
     return {
-        "name":        prod.get("shortDescription"),
-        "category":    prod.get("categoryName"),
-        "productSin":  prod.get("productSin"),
-        "brand":       prod.get("designerName"),
-        "price":       prod.get("retailPrice", {}).get("price"),
-        "imageUrl":    baseIMGURL + first_img.get("src", "")
+        "name":        prod.get("heroProductName")   or prod.get("shortDescription"),
+        "category":    (prod.get("browseCategory") or [{}])[0].get("name"),
+        "productSin":  prod.get("sin") or prod.get("productSin"),
+        "brand":       prod.get("brandName")        or prod.get("designerName"),
+        "price":       (prod.get("clearPrice") or prod.get("retailPrice") or {}).get("price"),
+        "imageUrl":    img_url
     }
 
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
