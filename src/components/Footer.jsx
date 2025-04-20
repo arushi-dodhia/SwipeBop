@@ -1,4 +1,5 @@
 import React from "react";
+import "./Footer.css";
 
 const styles = {
     mainContainer: {
@@ -25,7 +26,7 @@ const styles = {
 
 const Footer = () => {
   return (
-    <footer style={styles.footer}>
+    <footer style={styles.footer} className="hide-on-mobile">
       <div style={styles.mainContainer}>
         <div style={styles.footerLinks}>
           <a href="https://www.shopbop.com/" style={styles.footerLink}>
