@@ -40,6 +40,7 @@ const SwipeBop = () => {
   const [discardedProducts, setDiscardedProducts] = useState([]);
   const [likedModal, setLikedModal] = useState(false);
   const [discardedModal, setDiscardedModal] = useState(false);
+  const [loginChecked, setLoginChecked] = useState(false);
   const navigate = useNavigate();
   const likedScrollRef = useRef(null);
   const discardedScrollRef = useRef(null);
@@ -52,6 +53,8 @@ const SwipeBop = () => {
         setUserID(user.username);
       } catch (error) {
         setIsLoggedIn(false);
+      } finally {
+        setLoginChecked(true);
       }
     };
 
@@ -87,6 +90,8 @@ const SwipeBop = () => {
   }, [discardedModal]);
 
   useEffect(() => {
+    if (!loginChecked) return;
+
     const fetchProducts = async () => {
       setLoading(true);
       try {
@@ -98,7 +103,7 @@ const SwipeBop = () => {
             lang: "en-US",
             currency: "USD",
             q: category,
-            limit: 100,
+            limit: isLoggedIn ? 5 : 100,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
@@ -107,7 +112,7 @@ const SwipeBop = () => {
           });
 
           const response = await fetch(
-            `http://18.118.186.108:5000/swipebop/search?${queryParams}`,
+            `https://swipebop-backend.online/swipebop/search?${queryParams}`,
             {
               method: "GET",
               headers: {
@@ -156,7 +161,35 @@ const SwipeBop = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [isLoggedIn, loginChecked]);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!likedProducts?.items || likedProducts.items.length === 0) return;
+      try {
+        const response = await fetch(
+          `https://swipebop-backend.online/swipebop/recommendations/${userID}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        if (!response.ok) {
+          throw new Error("Failed to fetch recommendations");
+        }
+        const data = await response.json();
+        console.log("Recommendations:", data);
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+      }
+    }
+
+    if (isLoggedIn && likedProducts?.items) {
+      fetchRecommendations();
+    }
+    
+  }, [isLoggedIn, likedProducts]);
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -251,7 +284,11 @@ const SwipeBop = () => {
   const handleDislike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
-
+    if (!isLoggedIn) {
+      card.style.transition = "transform 0.3s ease";
+      card.style.transform = "translateX(-1000px) rotate(-30deg)";
+      setTimeout(() => removeCard(productId), 300);
+    }
     const outfits = getSelectedProducts();
     const item = outfits.find((product) => product.id == productId);
     if (!item) {
@@ -279,7 +316,7 @@ const SwipeBop = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/discard/insert",
+        "https://swipebop-backend.online/swipebop/discard/insert",
         {
           method: "POST",
           headers: {
@@ -319,6 +356,11 @@ const SwipeBop = () => {
   const handleLike = async (productId) => {
     const card = cardRefs.current[productId];
     if (!card) return;
+    if (!isLoggedIn) {
+      card.style.transition = "transform 0.3s ease";
+      card.style.transform = "translateX(1000px) rotate(30deg)";
+      setTimeout(() => removeCard(productId), 300);
+    }
     const outfits = getSelectedProducts();
     const item = outfits.find((product) => product.id == productId);
     if (!item) {
@@ -346,7 +388,7 @@ const SwipeBop = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/liked/insert",
+        "https://swipebop-backend.online/swipebop/liked/insert",
         {
           method: "POST",
           headers: {
@@ -430,7 +472,7 @@ const SwipeBop = () => {
   const fetchLikedProducts = async () => {
     try {
       const res = await fetch(
-        `http://18.118.186.108:5000/swipebop/liked/${userID}`,
+        `https://swipebop-backend.online/swipebop/liked/${userID}`,
         {
           method: "GET",
           headers: {
@@ -456,7 +498,7 @@ const SwipeBop = () => {
   const fetchDiscardedProducts = async () => {
     try {
       const res = await fetch(
-        `http://18.118.186.108:5000/swipebop/discard/${userID}`,
+        `https://swipebop-backend.online/swipebop/discard/${userID}`,
         {
           method: "GET",
           headers: {
@@ -480,14 +522,17 @@ const SwipeBop = () => {
   };
 
   useEffect(() => {
-    fetchLikedProducts(), fetchDiscardedProducts();
-  }, []);
+      if (!isLoggedIn || !userID) return;
+  
+      fetchLikedProducts();
+      fetchDiscardedProducts();
+    }, [isLoggedIn, userID]);
 
   const removeFromLiked = async (productId) => {
     console.log(userID, productId);
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/liked/delete",
+        "https://swipebop-backend.online/swipebop/liked/delete",
         {
           method: "POST",
           headers: {
@@ -520,7 +565,7 @@ const SwipeBop = () => {
   const removeFromDiscard = async (productId) => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/discard/delete",
+        "https://swipebop-backend.online/swipebop/discard/delete",
         {
           method: "POST",
           headers: {
@@ -594,7 +639,7 @@ const SwipeBop = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/insert",
+        "https://swipebop-backend.online/swipebop/outfits/insert",
         {
           method: "POST",
           headers: {
@@ -633,7 +678,7 @@ const SwipeBop = () => {
   const clearLiked = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000//swipebop/liked/delete_all",
+        "https://swipebop-backend.online//swipebop/liked/delete_all",
         {
           method: "POST",
           headers: {
@@ -661,7 +706,7 @@ const SwipeBop = () => {
   const clearDisliked = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000//swipebop/discard/delete_all",
+        "https://swipebop-backend.online//swipebop/discard/delete_all",
         {
           method: "POST",
           headers: {

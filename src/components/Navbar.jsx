@@ -2,170 +2,218 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, signOut } from "@aws-amplify/auth";
 
-const styles = {
-    container: {
-        margin: 0,
-        padding: 0,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        lineHeight: 1.6,
-    },
-    noiseOverlay: {
-        position: "relative",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "url('/images/noise.png')",
-        opacity: 0.2,
-        zIndex: 2,
-    },
-    nav: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: '1rem',
-        gap: '2rem',
-    },
-    navLink: {
-        textDecoration: 'none',
-        color: '#333',
-    },
-    mainContainer: {
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0 2rem',
-    },
-    hero: {
-        textAlign: 'center',
-        padding: '4rem 0',
-    },
-    h1: {
-        fontWeight: 'light-bold',
-        marginBottom: '1rem',
-        color: "white"
-
-    },
-    subtitle: {
-        fontSize: '1.2rem',
-        color: '#666',
-        marginBottom: '2rem',
-    },
-    button: {
-        background: '#DB3B14',
-        color: 'white',
-        padding: '0.8rem 2rem',
-        border: 'none',
-        borderRadius: '40px',
-        cursor: 'pointer',
-    },
-    section: {
-        padding: '4rem 0',
-    },
-    h2: {
-        color: '#DB3B14',
-        fontSize: '2.5rem',
-        marginBottom: '2rem',
-    },
-    textLarge: {
-        fontSize: '1.2rem',
-        marginBottom: '1.5rem',
-    },
-    h3: {
-        color: "#FFAF87",
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '2rem',
-        margin: '2rem 0',
-    },
-    statsBox: {
-        marginBottom: '2rem',
-    },
-    statsTitle: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        marginBottom: '1rem',
-    },
-    statsIcon: {
-        background: '#333',
-        color: 'white',
-        width: '40px',
-        height: '40px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '4px',
-    },
-    image: {
-        maxWidth: '100%',
-        height: 'auto',
-        borderRadius: '8px',
-    },
-    footer: {
-        background: '#f5f5f5',
-        padding: '2rem 0',
-        textAlign: 'center',
-    },
-    footerLinks: {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '2rem',
-        marginBottom: '1rem',
-    },
-    footerLink: {
-        color: '#666',
-        textDecoration: 'none',
-    },
-};
-
 const Navbar = () => {
-    const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    useEffect(() => {
-        // Check if the user is logged in
-        const checkUserStatus = async () => {
-            try {
-                const user = await getCurrentUser();
-                if (user) {
-                    setIsLoggedIn(true);
-                }
-            } catch (error) {
-                setIsLoggedIn(false);
-            }
-        };
-
-        checkUserStatus();
-    }, []);
-
-    const handleLogout = async () => {
-        try {
-            await signOut();
-            setIsLoggedIn(false);
-            navigate("/"); // Redirect user to logout page
-        } catch (error) {
-            console.error("Logout error:", error);
-            alert(error.message);
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsLoggedIn(true);
         }
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
     };
 
-    return (
+    checkUserStatus();
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsOpen(false); // Close drawer when resized to desktop
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setIsLoggedIn(false);
+      setIsOpen(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert(error.message);
+    }
+  };
+
+  const navigateTo = (path) => {
+    navigate(path);
+    setIsOpen(false);
+  };
+
+  const renderNavLinks = (navStyles, onClick = null) => (
+    <>
+      <a href="#" style={navStyles} onClick={() => onClick ? onClick("/") : navigate("/")}>HOME</a>
+      <a href="#" style={navStyles} onClick={() => onClick ? onClick("/swipe") : navigate("/swipe")}>SWIPE</a>
+      <a href="#" style={navStyles} onClick={() => onClick ? onClick("/about-us") : navigate("/about-us")}>ABOUT</a>
+      <a href="#" style={navStyles} onClick={() => onClick ? onClick("/contact-us") : navigate("/contact-us")}>CONTACT</a>
+      <a href="#" style={navStyles} onClick={() => onClick ? onClick("/closet") : navigate("/closet")}>CLOSET</a>
+      {isLoggedIn ? (
+        <a href="#" style={navStyles} onClick={onClick ? handleLogout : handleLogout}>LOGOUT</a>
+      ) : (
+        <>
+          <a href="#" style={navStyles} onClick={() => onClick ? onClick("/login") : navigate("/login")}>LOGIN</a>
+          <a href="#" style={navStyles} onClick={() => onClick ? onClick("/signup") : navigate("/signup")}>SIGNUP</a>
+        </>
+      )}
+    </>
+  );
+
+  return (
+    <>
+      {isMobile && (
+        <div style={styles.hamburgerContainer}>
+          <button 
+            style={styles.hamburgerButton} 
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Menu"
+          >
+            <div style={styles.hamburgerIcon}>
+              <span style={styles.hamburgerLine}></span>
+              <span style={styles.hamburgerLine}></span>
+              <span style={styles.hamburgerLine}></span>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {!isMobile && (
         <nav style={styles.nav}>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/")}>HOME</a>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/swipe")}>SWIPE</a>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/about-us")}>ABOUT</a>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/contact-us")}>CONTACT</a>
-            <a href="#" style={styles.navLink} onClick={() => navigate("/closet")}>CLOSET</a>
-            {isLoggedIn ?
-                <a href="#" style={styles.navLink} onClick={() => handleLogout()}>LOGOUT</a> :
-                <>
-                    <a href="#" style={styles.navLink} onClick={() => navigate("/login")}>LOGIN</a>
-                    <a href="#" style={styles.navLink} onClick={() => navigate("/signup")}>SIGNUP</a>
-                </>
-            }
-        </nav >
-    )
-}
+          {renderNavLinks(styles.navLink)}
+        </nav>
+      )}
+
+      {isMobile && (
+        <>
+          {isOpen && (
+            <div 
+              style={styles.overlay} 
+              onClick={() => setIsOpen(false)}
+            />
+          )}
+
+          <nav style={{
+            ...styles.drawer,
+            transform: isOpen ? 'translateX(0)' : 'translateX(-100%)'
+          }}>
+            <div style={styles.drawerHeader}>
+              <button 
+                style={styles.closeButton} 
+                onClick={() => setIsOpen(false)}
+                aria-label="Close menu"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={styles.drawerContent}>
+              {renderNavLinks(styles.drawerLink, navigateTo)}
+            </div>
+          </nav>
+        </>
+      )}
+    </>
+  );
+};
+
+const styles = {
+  nav: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    padding: '1rem',
+    gap: '2rem',
+  },
+  navLink: {
+    textDecoration: 'none',
+    color: '#333',
+  },
+  
+  hamburgerContainer: {
+    position: 'fixed',
+    top: '1rem',
+    left: '1rem',
+    zIndex: 100,
+  },
+  hamburgerButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '0.5rem',
+  },
+  hamburgerIcon: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    width: '24px',
+    height: '20px',
+  },
+  hamburgerLine: {
+    width: '100%',
+    height: '3px',
+    backgroundColor: '#333',
+    borderRadius: '2px',
+  },
+  
+
+  drawer: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    height: '100vh',
+    width: '250px',
+    backgroundColor: '#fff',
+    boxShadow: '2px 0 8px rgba(0,0,0,0.2)',
+    zIndex: 1000,
+    transition: 'transform 0.3s ease-in-out',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  drawerHeader: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    padding: '1rem',
+    borderBottom: '1px solid #eee',
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    color: '#333',
+  },
+  drawerContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '1rem 0',
+    flex: 1,
+  },
+  drawerLink: {
+    textDecoration: 'none',
+    color: '#333',
+    padding: '1rem 1.5rem',
+    borderBottom: '1px solid #eee',
+    fontSize: '1rem',
+  },
+  
+
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    zIndex: 999,
+  },
+};
 
 export default Navbar;

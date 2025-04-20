@@ -81,7 +81,7 @@ const SwipeBop_Test = () => {
           });
 
           const response = await fetch(
-            `http://18.118.186.108:5000/swipebop/search?${queryParams}`,
+            `https://swipebop-backend.online/swipebop/search?${queryParams}`,
             {
               method: "GET",
               headers: {
@@ -149,7 +149,7 @@ const SwipeBop_Test = () => {
           });
           console.log(queryParams.toString());
           const res = await fetch(
-            `http://18.118.186.108:5000/swipebop/outfits?${queryParams.toString()}`,
+            `https://swipebop-backend.online/swipebop/outfits?${queryParams.toString()}`,
             {
               method: "GET",
             }
@@ -372,7 +372,7 @@ const SwipeBop_Test = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/discard/insert",
+        "https://swipebop-backend.online/swipebop/discard/insert",
         {
           method: "POST",
           headers: {
@@ -442,7 +442,7 @@ const SwipeBop_Test = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/liked/insert",
+        "https://swipebop-backend.online/swipebop/liked/insert",
         {
           method: "POST",
           headers: {
@@ -527,7 +527,7 @@ const SwipeBop_Test = () => {
   const fetchLikedProducts = async () => {
     try {
       const res = await fetch(
-        `http://18.118.186.108:5000/swipebop/liked/${userID}`,
+        `https://swipebop-backend.online/swipebop/liked/${userID}`,
         {
           method: "GET",
           headers: {
@@ -553,7 +553,7 @@ const SwipeBop_Test = () => {
   const fetchDiscardedProducts = async () => {
     try {
       const res = await fetch(
-        `http://18.118.186.108:5000/swipebop/discard/${userID}`,
+        `https://swipebop-backend.online/swipebop/discard/${userID}`,
         {
           method: "GET",
           headers: {
@@ -580,7 +580,7 @@ const SwipeBop_Test = () => {
     console.log(userID, productId);
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/liked/delete",
+        "https://swipebop-backend.online/swipebop/liked/delete",
         {
           method: "POST",
           headers: {
@@ -613,7 +613,7 @@ const SwipeBop_Test = () => {
   const removeFromDiscard = async (productId) => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/discard/delete",
+        "https://swipebop-backend.online/swipebop/discard/delete",
         {
           method: "POST",
           headers: {
@@ -687,7 +687,7 @@ const SwipeBop_Test = () => {
 
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/insert",
+        "https://swipebop-backend.online/swipebop/outfits/insert",
         {
           method: "POST",
           headers: {
@@ -726,7 +726,7 @@ const SwipeBop_Test = () => {
   const clearLiked = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000//swipebop/liked/delete_all",
+        "https://swipebop-backend.online//swipebop/liked/delete_all",
         {
           method: "POST",
           headers: {
@@ -754,7 +754,7 @@ const SwipeBop_Test = () => {
   const clearDisliked = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000//swipebop/discard/delete_all",
+        "https://swipebop-backend.online//swipebop/discard/delete_all",
         {
           method: "POST",
           headers: {

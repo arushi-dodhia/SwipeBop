@@ -170,7 +170,7 @@ def search_products():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -526,6 +526,7 @@ def fetch_product_summary(product_sin, lang="en-US"):
 def itemRecommendation(user_id):
     liked_items = liked.getLikedItems(user_id)
     liked_sins = [row["product_id"] for row in liked_items if "product_id" in row]
+
 
     if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400

@@ -122,13 +122,57 @@ const styles = {
     color: "#666",
     textDecoration: "none",
   },
+  headerContainer: {
+    maxWidth: "1000px",
+    margin: "0 auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "1rem 2rem",
+    flexDirection: "row", 
+    flexWrap: "wrap",
+    gap: "1rem",
+  },
+  mainTitle: {
+    color: "#DB3B14",
+    fontStyle: "italic",
+    fontSize: "5rem",
+    transition: "font-size 0.3s ease",
+  },
+  outfitsTitle: {
+    color: "#DB3B14",
+    margin: 0,
+    transition: "font-size 0.3s ease",
+  },
+  buttonWrapper: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
 };
 
 const Closet = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userID, setUserID] = useState(null);
   const [outfits, setOutfits] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const navigate = useNavigate();
+
+  // Add window resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Determine if mobile view
+  const isMobile = windowWidth < 768;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -151,7 +195,7 @@ const Closet = () => {
   const fetchOutfits = async (userID) => {
     try {
       const response = await fetch(
-        `http://18.118.186.108:5000/swipebop/outfits/${userID}`
+        `https://swipebop-backend.online/swipebop/outfits/${userID}`
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -169,7 +213,7 @@ const Closet = () => {
   const removeOutfit = async (outfitId) => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/delete",
+        "https://swipebop-backend.online/swipebop/outfits/delete",
         {
           method: "POST",
           headers: {
@@ -197,7 +241,7 @@ const Closet = () => {
   const clearCloset = async () => {
     try {
       const res = await fetch(
-        "http://18.118.186.108:5000/swipebop/outfits/delete_all",
+        "https://swipebop-backend.online/swipebop/outfits/delete_all",
         {
           method: "POST",
           headers: {
@@ -231,13 +275,15 @@ const Closet = () => {
       }}
     >
       <Navbar />
-      <section style={{ ...styles.hero, flex: 1 }}>
+      <section style={{ 
+        ...styles.hero, 
+        flex: 1, 
+        padding: isMobile ? "2rem 1rem" : "4rem 0" 
+      }}>
         <h1
           style={{
-            ...styles.h1,
-            color: "#DB3B14",
-            fontStyle: "italic",
-            fontSize: "5rem",
+            ...styles.mainTitle,
+            fontSize: isMobile ? "3rem" : "5rem",
           }}
         >
           swipebop closet
@@ -246,15 +292,17 @@ const Closet = () => {
           <>
             <div
               style={{
-                maxWidth: "1000px",
-                margin: "0 auto",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "1rem 2rem",
+                ...styles.headerContainer,
+                flexDirection: isMobile ? "column" : "row",
+                padding: isMobile ? "1rem" : "1rem 2rem",
               }}
             >
-              <h1 style={{ ...styles.h1, color: "#DB3B14" }}>Outfits</h1>
+              <h1 style={{ 
+                ...styles.outfitsTitle, 
+                fontSize: isMobile ? "1.8rem" : "2.2rem" 
+              }}>
+                Outfits
+              </h1>
               <button
                 style={{
                   ...styles.button,
@@ -266,6 +314,8 @@ const Closet = () => {
                     outfits && outfits.outfits && outfits.outfits.length > 0
                       ? "pointer"
                       : "not-allowed",
+                  padding: isMobile ? "0.6rem 1.5rem" : "0.8rem 2rem",
+                  width: isMobile ? "100%" : "auto",
                 }}
                 onClick={() => clearCloset()}
                 disabled={
@@ -288,19 +338,39 @@ const Closet = () => {
           </>
         ) : (
           <>
-            <h1 style={{ ...styles.h1, color: "#DB3B14" }}>
+            <h1 style={{ 
+              ...styles.h1, 
+              color: "#DB3B14",
+              fontSize: isMobile ? "1.5rem" : "2rem",
+              padding: isMobile ? "0 1rem" : 0
+            }}>
               Login / Signup to View Liked Outfits.
             </h1>
             <br />
-            <button
-              style={{ ...styles.button, marginRight: "10px" }}
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-            <button style={styles.button} onClick={() => navigate("/signup")}>
-              Signup
-            </button>
+            <div style={styles.buttonWrapper}>
+              <button
+                style={{ 
+                  ...styles.button, 
+                  marginRight: isMobile ? "0" : "10px",
+                  marginBottom: isMobile ? "10px" : "0",
+                  width: isMobile ? "100%" : "auto",
+                  maxWidth: isMobile ? "250px" : "none"
+                }}
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </button>
+              <button 
+                style={{ 
+                  ...styles.button,
+                  width: isMobile ? "100%" : "auto",
+                  maxWidth: isMobile ? "250px" : "none"
+                }} 
+                onClick={() => navigate("/signup")}
+              >
+                Signup
+              </button>
+            </div>
           </>
         )}
       </section>

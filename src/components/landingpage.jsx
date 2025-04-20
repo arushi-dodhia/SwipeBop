@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MultiCenterGradient from './gradient';
 import { useNavigate } from "react-router-dom";
 import Navbar from './Navbar';
@@ -51,20 +51,36 @@ const styles = {
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '0 2rem',
+    '@media (max-width: 768px)': {
+      padding: '0 1rem',
+    },
   },
   hero: {
     textAlign: 'center',
     padding: '4rem 0',
+    '@media (max-width: 768px)': {
+      padding: '2rem 0',
+    },
   },
   h1: {
     fontWeight: 'light-bold',
     marginBottom: '1rem',
     color: "white",
+    '@media (max-width: 768px)': {
+      fontSize: '3rem !important',
+    },
+    '@media (max-width: 480px)': {
+      fontSize: '2.5rem !important',
+    },
   },
   subtitle: {
     fontSize: '1.2rem',
     color: '#666',
     marginBottom: '2rem',
+    '@media (max-width: 768px)': {
+      fontSize: '1rem',
+      marginBottom: '1.5rem',
+    },
   },
   button: {
     background: '#DB3B14',
@@ -74,19 +90,34 @@ const styles = {
     borderRadius: '40px',
     cursor: 'pointer',
     fontSize: '1rem',
+    '@media (max-width: 768px)': {
+      padding: '0.7rem 1.5rem',
+      fontSize: '0.9rem',
+    },
   },
   section: {
     padding: '4rem 0',
+    '@media (max-width: 768px)': {
+      padding: '2rem 0',
+    },
   },
   h2: {
     color: '#DB3B14',
     fontSize: '2.5rem',
     marginBottom: '2rem',
     textAlign: 'center',
+    '@media (max-width: 768px)': {
+      fontSize: '2rem',
+      marginBottom: '1.5rem',
+    },
   },
   textLarge: {
     fontSize: '1.2rem',
     marginBottom: '1.5rem',
+    '@media (max-width: 768px)': {
+      fontSize: '1rem',
+      marginBottom: '1rem',
+    },
   },
   h3: {
     color: "#FFAF87",
@@ -95,6 +126,10 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '2rem',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1.5rem',
+    },
   },
   statsBox: {
     marginBottom: '2rem',
@@ -120,6 +155,8 @@ const styles = {
     maxWidth: '100%',
     height: 'auto',
     borderRadius: '8px',
+    display: 'flex',
+    justifyContent: 'center',
   },
   footer: {
     background: '#f5f5f5',
@@ -132,6 +169,9 @@ const styles = {
     gap: '2rem',
     marginBottom: '1rem',
     flexWrap: 'wrap',
+    '@media (max-width: 768px)': {
+      gap: '1rem',
+    },
   },
   footerLink: {
     color: '#666',
@@ -139,12 +179,28 @@ const styles = {
   },
 };
 
+const useResponsive = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return { isMobile };
+};
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [productImage, setProductImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { isMobile } = useResponsive();
 
   const fallbackImage = "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop";
 
@@ -184,7 +240,7 @@ const LandingPage = () => {
         dept: 'WOMENS',
       });
 
-      const response = await fetch(`http://18.118.186.108:5000/swipebop/images?${queryParams}`, {
+      const response = await fetch(`https://swipebop-backend.online/swipebop/images?${queryParams}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -229,23 +285,42 @@ const LandingPage = () => {
     }
   };
 
+  // Apply responsive styles dynamically
+  const getResponsiveStyle = (baseStyle, mobileStyle) => {
+    return isMobile ? { ...baseStyle, ...mobileStyle } : baseStyle;
+  };
+
   return (
     <div style={styles.container}>
       <div>
         <MultiCenterGradient>
           <Navbar />
           <section style={styles.hero}>
-            <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '5rem' }}>s w i p e b o p</h1>
+            <h1 style={{ 
+              ...styles.h1, 
+              fontStyle: 'italic', 
+              fontSize: isMobile ? '3rem' : '5rem' 
+            }}>
+              s w i p e b o p
+            </h1>
             <p style={styles.subtitle}>
               Effortless fashion at your fingertips<br />
               — swipe, match, and style
             </p>
-            <button style={styles.button} onClick={() => navigate('/swipe')}>Start Swiping</button>
+            <button 
+              style={styles.button} 
+              onClick={() => navigate('/swipe')}
+            >
+              Start Swiping
+            </button>
           </section>
         </MultiCenterGradient>
       </div>
 
-      <div style={styles.mainContainer}>
+      <div style={getResponsiveStyle(
+        styles.mainContainer, 
+        { padding: '0 1rem' }
+      )}>
         <section style={styles.section}>
           <h2 style={styles.h2}>A New Way to Shop Fashion</h2>
           <div style={styles.grid}>
@@ -261,7 +336,12 @@ const LandingPage = () => {
             </div>
             <div>
               {isLoading ? (
-                <div style={{ ...styles.image, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ 
+                  ...styles.image, 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center' 
+                }}>
                   Loading fashion image...
                 </div>
               ) : (
@@ -269,7 +349,11 @@ const LandingPage = () => {
                   <img
                     src={image1 || fallbackImage}
                     alt="Fashion item"
-                    style={{ width: '60%', height: '30%', objectFit: 'cover' }}
+                    style={{ 
+                      width: isMobile ? '80%' : '60%', 
+                      height: '30%', 
+                      objectFit: 'cover' 
+                    }}
                     onError={(e) => {
                       console.error('Image failed to load:', e.target.src);
                       e.target.src = fallbackImage;
@@ -300,7 +384,11 @@ const LandingPage = () => {
                 <img
                   src={image2 || fallbackImage}
                   alt="Fashion item"
-                  style={{ width: '60%', height: '30%', objectFit: 'cover' }}
+                  style={{ 
+                    width: isMobile ? '80%' : '60%', 
+                    height: '30%', 
+                    objectFit: 'cover' 
+                  }}
                   onError={(e) => {
                     console.error('Image failed to load:', e.target.src);
                     e.target.src = fallbackImage;
@@ -314,15 +402,41 @@ const LandingPage = () => {
         <section style={styles.section}>
           <h2 style={styles.h2}>Visualize Your Outfits</h2>
           <p style={styles.textLarge}>SwipeBop lets you instantly visualize how pieces come together.</p>
-          
         </section>
       </div>
 
-      <div style={{ height: '180px', overflow: 'hidden' }}>
-        <MultiCenterGradient style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <h1 style={{ ...styles.h1, fontStyle: 'italic', fontSize: '3rem' }}>s w i p e n o w</h1>
-            <button style={{ ...styles.button }} onClick={() => navigate('/swipe')}>Start Swiping</button>
+      <div style={{ 
+        height: isMobile ? '150px' : '180px', 
+        overflow: 'hidden' 
+      }}>
+        <MultiCenterGradient style={{ 
+          height: '100%', 
+          width: '100%', 
+          display: 'flex', 
+          alignItems: 'center' 
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%',
+            padding: isMobile ? '0 1rem' : '0' 
+          }}>
+            <h1 style={{ 
+              ...styles.h1, 
+              fontStyle: 'italic', 
+              fontSize: isMobile ? '2rem' : '3rem',
+              marginBottom: isMobile ? '0.5rem' : '1rem'
+            }}>
+              s w i p e n o w
+            </h1>
+            <button 
+              style={{ ...styles.button }} 
+              onClick={() => navigate('/swipe')}
+            >
+              Start Swiping
+            </button>
           </div>
         </MultiCenterGradient>
       </div>
