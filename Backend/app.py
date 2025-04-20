@@ -498,12 +498,7 @@ def delete_all_liked():
         return jsonify({"error": str(e)}), 500
     
 
-def _extract_category(prod) -> str | None:
-    if prod.get("categoryName"):
-        return prod["categoryName"]
-    if prod.get("heroCategoryName"):
-        return prod["heroCategoryName"]
-
+def _extract_category(prod):
     pc = prod.get("productCategory")
     if pc:
         if isinstance(pc, dict):
@@ -522,15 +517,23 @@ def _extract_category(prod) -> str | None:
     cb = prod.get("categoryBreadcrumb")
     if isinstance(cb, list) and cb:
         return cb[0].get("name")
+    return None        
 
-    return None     
-
-def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
+def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US", *, debug=True):
     url = f"{baseURL}/public/products/{product_sin}"
     params = {"dept": dept, "lang": lang, "allowOutOfStockItems": "true"}
     raw  = fetch_from_shopbop(url, params)
     if not isinstance(raw, dict):
         return None
+    
+    if debug:                           
+        import json, pprint, pathlib
+        fname = pathlib.Path(f"raw_{product_sin}.json")
+        fname.write_text(json.dumps(raw, indent=2))
+        pprint.pprint(list(raw.keys()))
+        if "product" in raw:
+            pprint.pprint(list(raw["product"].keys()))
+        print(f"[DEBUG] wrote full payload to {fname}")
 
 
     if "product" in raw:
