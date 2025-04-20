@@ -497,66 +497,93 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+def _search_category(product_code: str, *, dept="WOMENS", lang="en-US") -> str | None:
+    """
+    Call /public/search?q=<product_code>&limit=1 and pull category info
+    from the first hit.  Returns None if nothing useful is found.
+    """
+    if not product_code:
+        return None
 
-def _extract_category(prod):
+    url = f"{baseURL}/public/search"
+    params = {
+        "q": product_code,
+        "dept": dept,
+        "lang": lang,
+        "allowOutOfStockItems": "true",
+        "limit": "1"
+    }
+    data = fetch_from_shopbop(url, params)
+    if not isinstance(data, dict) or not data.get("products"):
+        return None
+
+    hit = data["products"][0]      
+    cat = _extract_category(hit)
+    if cat and cat.upper() != "UNKNOWN":
+        return cat
+    return None
+
+def _extract_category(prod):             
     pc = prod.get("productCategory")
     if pc:
         if isinstance(pc, dict):
-            return pc.get("name") or pc.get("categoryName")
-        if isinstance(pc, str):
-            return pc
+            val = pc.get("name") or pc.get("categoryName")
+        else:
+            val = pc
+        if val and val.upper() != "UNKNOWN":
+            return val
 
     pcs = prod.get("productCategories")
     if isinstance(pcs, list) and pcs:
-        return pcs[0].get("name") or pcs[0].get("categoryName")
+        val = pcs[0].get("name") or pcs[0].get("categoryName")
+        if val and val.upper() != "UNKNOWN":
+            return val
 
     bc = prod.get("browseCategories") or prod.get("browseCategory")
     if isinstance(bc, list) and bc:
-        return bc[0].get("name")
+        val = bc[0].get("name")
+        if val and val.upper() != "UNKNOWN":
+            return val
 
     cb = prod.get("categoryBreadcrumb")
     if isinstance(cb, list) and cb:
-        return cb[0].get("name")
-    return None        
+        val = cb[0].get("name")
+        if val and val.upper() != "UNKNOWN":
+            return val
+    return None                         
 
-def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US", *, debug=True):
-    url = f"{baseURL}/public/products/{product_sin}"
+
+def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
+    url    = f"{baseURL}/public/products/{product_sin}"
     params = {"dept": dept, "lang": lang, "allowOutOfStockItems": "true"}
-    raw  = fetch_from_shopbop(url, params)
+    raw    = fetch_from_shopbop(url, params)
     if not isinstance(raw, dict):
         return None
-    
-    if debug:                           
-        import json, pprint, pathlib
-        fname = pathlib.Path(f"raw_{product_sin}.json")
-        fname.write_text(json.dumps(raw, indent=2))
-        pprint.pprint(list(raw.keys()))
-        if "product" in raw:
-            pprint.pprint(list(raw["product"].keys()))
-        print(f"[DEBUG] wrote full payload to {fname}")
 
-
-    if "product" in raw:
-        prod = raw["product"]
-    elif raw.get("products"):
-        prod = raw["products"][0]
-    else:
+    prod = raw.get("product") or (raw.get("products") or [None])[0]
+    if not prod:
         return None
 
-    print(json.dumps(list(prod.keys()), indent=2), file=sys.stderr)
+    category = _extract_category(prod)
+
+    if not category:
+        category = _search_category(prod.get("productCode") or prod.get("shortDescription", ""),
+                                    dept=dept, lang=lang) or "Uncategorised"
 
     first_color = (prod.get("colors") or [{}])[0]
     first_img   = (first_color.get("images") or [{}])[0].get("src", "")
     img_url     = baseIMGURL + first_img.lstrip("/")
 
     return {
-        "name":      prod.get("heroProductName") or prod.get("shortDescription"),
-        "category":  _extract_category(prod),
-        "productSin": prod.get("sin") or prod.get("productSin"),
-        "brand":     prod.get("brandName") or prod.get("designerName"),
-        "price":     (prod.get("clearPrice") or prod.get("retailPrice") or {}).get("price"),
-        "imageUrl":  img_url
+        "name":        prod.get("heroProductName") or prod.get("shortDescription"),
+        "category":    category,
+        "productSin":  prod.get("sin") or prod.get("productSin"),
+        "brand":       prod.get("brandName") or prod.get("designerName"),
+        "price":       (prod.get("clearPrice") or prod.get("retailPrice") or {}).get("price"),
+        "imageUrl":    img_url
     }
+
+
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
     liked_items = liked.getLikedItems(user_id)
