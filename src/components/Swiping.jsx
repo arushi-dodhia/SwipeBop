@@ -308,6 +308,7 @@ const SwipeBop = () => {
     const product = {
       productSin: item.id,
       imageUrl: item.imageUrl,
+      url: item.url,
       name: item.name,
       brand: item.brand,
       price: item.price,
@@ -380,6 +381,7 @@ const SwipeBop = () => {
     const product = {
       productSin: item.id,
       imageUrl: item.imageUrl,
+      url: item.url,
       name: item.name,
       brand: item.brand,
       price: item.price,

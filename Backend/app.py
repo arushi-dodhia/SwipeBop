@@ -56,8 +56,8 @@ def sanitize_data(params):
             params["minPrice"] = int(params["minPrice"])
         if params.get("maxPrice"):
             params["maxPrice"] = int(params["maxPrice"])
-        # if params.get("limit"):
-        #     params["limit"] = int(params["limit"])
+        if params.get("limit"):
+            params["limit"] = int(params["limit"])
         if params.get("offset"):
             params["offset"] = int(params["offset"])
     except ValueError:
@@ -127,7 +127,7 @@ def search_products_filtered():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -227,7 +227,7 @@ def browse_by_category():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "q": q,
         "offset": offset
@@ -280,7 +280,7 @@ def get_images():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
