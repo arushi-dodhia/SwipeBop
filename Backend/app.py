@@ -499,23 +499,25 @@ def delete_all_liked():
     
 
 def _extract_category(prod):
-    # 2024 payloads
-    bc = prod.get("browseCategory")
+    pc = prod.get("productCategory")
+    if pc:
+        if isinstance(pc, dict):
+            return pc.get("name") or pc.get("categoryName")
+        if isinstance(pc, str):
+            return pc
+
+    pcs = prod.get("productCategories")
+    if isinstance(pcs, list) and pcs:
+        return pcs[0].get("name") or pcs[0].get("categoryName")
+
+    bc = prod.get("browseCategories") or prod.get("browseCategory")
     if isinstance(bc, list) and bc:
         return bc[0].get("name")
 
-    # 2025 payloads (plural)
-    bc = prod.get("browseCategories")
-    if isinstance(bc, list) and bc:
-        return bc[0].get("name")
-
-    # April‑25 payloads
-    bc = prod.get("categoryBreadcrumb")
-    if isinstance(bc, list) and bc:
-        return bc[0].get("name")
-
-    return None           
-
+    cb = prod.get("categoryBreadcrumb")
+    if isinstance(cb, list) and cb:
+        return cb[0].get("name")
+    return None        
 
 def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     url = f"{baseURL}/public/products/{product_sin}"
