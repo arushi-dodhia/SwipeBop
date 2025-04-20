@@ -2,6 +2,7 @@ import random
 import time
 import requests
 from liked import likeItem
+from datetime import datetime
 
 DESIRED_COUNT = 100
 
@@ -49,30 +50,24 @@ def gather_product_data(desired_count=500):
     return all_products[:desired_count]
 
 def main():
-    user_id = "fakeUserA"
+    user_id = "fakeUserF"
     products = gather_product_data(DESIRED_COUNT)
 
-    print(f"\nInserting {len(products)} total items into 'liked' for user='{user_id}'\n")
+    print(f"\nInserting {len(products)} total items for '{user_id}'\n")
 
     inserted_count = 0
     for p in products:
-        try:
-            # 👇 IMPORTANT: Wrap everything under 'product'
-            wrapped_product = {
-                "product": {
-                    "productSin": str(p.get("productSin")),
-                    "shortDescription": p.get("shortDescription", ""),
-                    "designerName": p.get("designerName", ""),
-                    "price": str(p.get("price", "")),
-                    "imageURL": p.get("imageURL", "")
-                }
-            }
-            likeItem(user_id, wrapped_product)
-            inserted_count += 1
-        except Exception as e:
-            print(f"Error calling likeItem for productSin={p.get('productSin')}: {e}")
-
-    print(f"\nSuccessfully inserted {inserted_count} items for user '{user_id}'.\n")
+        flat_product = {
+            "name":       p.get("shortDescription", ""),
+            "category":   p.get("category", ""),
+            "productSin": str(p.get("productSin")),
+            "brand":      p.get("designerName", ""),
+            "price":      str(p.get("price", "")),
+            "imageUrl":   p.get("imageURL", "")
+        }
+        likeItem(user_id, flat_product)
+        inserted_count += 1
+    print(f"Inserted {inserted_count} items for user '{user_id}'")
 
 if __name__ == "__main__":
     main()

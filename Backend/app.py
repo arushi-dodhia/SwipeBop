@@ -500,37 +500,58 @@ def delete_all_liked():
         return jsonify({"status": "All liked items removed successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+def fetch_product_summary(product_sin, lang="en-US"):
+    url    = f"{baseURL}/public/products/{product_sin}"
+    params = {"lang": lang}
+
+    raw = fetch_from_shopbop(url, params)
+    if not isinstance(raw, dict) or "product" not in raw:
+        return None
+
+    prod = raw["product"]
+    first_color = (prod.get("colors") or [{}])[0]
+    first_img   = (first_color.get("images") or [{}])[0]
+
+    return {
+        "name":        prod.get("shortDescription"),
+        "category":    prod.get("categoryName"),
+        "productSin":  prod.get("productSin"),
+        "brand":       prod.get("designerName"),
+        "price":       prod.get("retailPrice", {}).get("price"),
+        "imageUrl":    baseIMGURL + first_img.get("src", "")
+    }
 
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
     liked_items = liked.getLikedItems(user_id)
-    if not liked_items:
-        return jsonify({"error": "No liked items found for user"}), 400
+    liked_sins = [row["product_id"] for row in liked_items if "product_id" in row]
 
-    liked_sins = []
-    for item in liked_items:
-        prod = item.get('product', {})
-        if 'product' in prod and isinstance(prod['product'], dict):
-            prod = prod['product']
-        if 'product_id' in prod:
-            liked_sins.append(prod['product_id'])
 
     if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400
-
     user_emb = build_user_embedding(liked_sins, catalog_embeddings)
     if user_emb is None:
         return jsonify({"error": "Could not build user embedding"}), 400
 
-    recs = hybrid_recommend(
+    rec_ids = hybrid_recommend(
         user_emb,
         catalog_embeddings,
         exclude_ids=liked_sins,
-        top_k=20,
-        final_n=10,
-        random_frac=0.3
+        top_k=20, final_n=10, random_frac=0.3
     )
-    return jsonify({"recommendations": recs})
+
+    rec_wrapped = []
+    for sin in rec_ids:
+        prod = fetch_product_summary(sin)
+        if prod:
+            rec_wrapped.append({
+                "product":    prod,
+                "time":       datetime.utcnow().isoformat(),
+                "user_id":    user_id,
+                "product_id": sin
+            })
+    return jsonify({"recommendations": rec_wrapped})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
