@@ -78,13 +78,11 @@ def sanitize_data(params):
             return(jsonify({"error":"language not available"}), 400)
     return None
 
-###new code
-
 
 def filter_product_data(raw_products):
     filtered_products = []
-    for item in raw_products:
-        product = item.get('product', {})
+    for product in raw_products:
+        # product = item.get('product', {})
         filtered = {
             "productSin": product.get("productSin"),
             "productCode": product.get("productCode"),
@@ -499,38 +497,55 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+
+def _extract_category(prod):
+    # 2024 payloads
+    bc = prod.get("browseCategory")
+    if isinstance(bc, list) and bc:
+        return bc[0].get("name")
+
+    # 2025 payloads (plural)
+    bc = prod.get("browseCategories")
+    if isinstance(bc, list) and bc:
+        return bc[0].get("name")
+
+    # April‑25 payloads
+    bc = prod.get("categoryBreadcrumb")
+    if isinstance(bc, list) and bc:
+        return bc[0].get("name")
+
+    return None           
+
+
 def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     url = f"{baseURL}/public/products/{product_sin}"
-    params = {
-        "dept": dept,
-        "lang": lang,
-        "allowOutOfStockItems": "true"
-    }
-
-    raw = fetch_from_shopbop(url, params)
+    params = {"dept": dept, "lang": lang, "allowOutOfStockItems": "true"}
+    raw  = fetch_from_shopbop(url, params)
     if not isinstance(raw, dict):
         return None
+
+
     if "product" in raw:
         prod = raw["product"]
-    elif "products" in raw and raw["products"]:
+    elif raw.get("products"):
         prod = raw["products"][0]
     else:
         return None
 
+    print(json.dumps(list(prod.keys()), indent=2), file=sys.stderr)
+
     first_color = (prod.get("colors") or [{}])[0]
     first_img   = (first_color.get("images") or [{}])[0].get("src", "")
-
-    img_url = baseIMGURL + first_img.lstrip("/")
+    img_url     = baseIMGURL + first_img.lstrip("/")
 
     return {
-        "name":        prod.get("heroProductName")   or prod.get("shortDescription"),
-        "category":    (prod.get("browseCategory") or [{}])[0].get("name"),
-        "productSin":  prod.get("sin") or prod.get("productSin"),
-        "brand":       prod.get("brandName")        or prod.get("designerName"),
-        "price":       (prod.get("clearPrice") or prod.get("retailPrice") or {}).get("price"),
-        "imageUrl":    img_url
+        "name":      prod.get("heroProductName") or prod.get("shortDescription"),
+        "category":  _extract_category(prod),
+        "productSin": prod.get("sin") or prod.get("productSin"),
+        "brand":     prod.get("brandName") or prod.get("designerName"),
+        "price":     (prod.get("clearPrice") or prod.get("retailPrice") or {}).get("price"),
+        "imageUrl":  img_url
     }
-
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
     liked_items = liked.getLikedItems(user_id)
