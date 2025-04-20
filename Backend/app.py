@@ -508,13 +508,14 @@ def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     }
 
     raw = fetch_from_shopbop(url, params)
+    print(json.dumps(raw)[:800], file=sys.stderr)
     if not isinstance(raw, dict):
         return None        # network or status error
     if "product" in raw:
         prod = raw["product"]
     else:
         prod = raw 
-        
+
     first_color = (prod.get("colors") or [{}])[0]
     first_img   = (first_color.get("images") or [{}])[0]
 
