@@ -12,7 +12,7 @@ from datetime import datetime
 # rec engine stuff
 # import scheduler
 from CNNengine.recommender import catalog_embeddings, build_user_embedding, hybrid_recommend
-
+from typing import Optional  
 
 app = Flask(__name__)
 CORS(app)
@@ -497,7 +497,7 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-def _search_category(product_code: str, *, dept="WOMENS", lang="en-US") -> str | None:
+def _search_category(product_code: str, *, dept="WOMENS", lang="en-US") -> Optional[str]:
     """
     Call /public/search?q=<product_code>&limit=1 and pull category info
     from the first hit.  Returns None if nothing useful is found.
