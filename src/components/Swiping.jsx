@@ -40,6 +40,7 @@ const SwipeBop = () => {
   const [discardedProducts, setDiscardedProducts] = useState([]);
   const [likedModal, setLikedModal] = useState(false);
   const [discardedModal, setDiscardedModal] = useState(false);
+  const [loginChecked, setLoginChecked] = useState(false);
   const navigate = useNavigate();
   const likedScrollRef = useRef(null);
   const discardedScrollRef = useRef(null);
@@ -52,6 +53,8 @@ const SwipeBop = () => {
         setUserID(user.username);
       } catch (error) {
         setIsLoggedIn(false);
+      } finally {
+        setLoginChecked(true);
       }
     };
 
@@ -87,7 +90,7 @@ const SwipeBop = () => {
   }, [discardedModal]);
 
   useEffect(() => {
-    if (isLoggedIn === false) return;
+    if (!loginChecked) return;
 
     const fetchProducts = async () => {
       setLoading(true);
@@ -100,7 +103,7 @@ const SwipeBop = () => {
             lang: "en-US",
             currency: "USD",
             q: category,
-            limit: isLoggedIn ? 5: 100,
+            limit: isLoggedIn ? 5 : 100,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
@@ -158,7 +161,7 @@ const SwipeBop = () => {
     };
 
     fetchProducts();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, loginChecked]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
