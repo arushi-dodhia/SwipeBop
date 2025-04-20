@@ -58,7 +58,7 @@ def sanitize_data(params):
         if params.get("maxPrice"):
             params["maxPrice"] = int(params["maxPrice"])
         if params.get("limit"):
-             params["limit"] = int(params["limit"])
+            params["limit"] = int(params["limit"])
         if params.get("offset"):
             params["offset"] = int(params["offset"])
     except ValueError:
