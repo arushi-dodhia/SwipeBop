@@ -57,8 +57,8 @@ def sanitize_data(params):
             params["minPrice"] = int(params["minPrice"])
         if params.get("maxPrice"):
             params["maxPrice"] = int(params["maxPrice"])
-        # if params.get("limit"):
-        #     params["limit"] = int(params["limit"])
+        if params.get("limit"):
+             params["limit"] = int(params["limit"])
         if params.get("offset"):
             params["offset"] = int(params["offset"])
     except ValueError:
@@ -81,8 +81,8 @@ def sanitize_data(params):
 
 def filter_product_data(raw_products):
     filtered_products = []
-    for product in raw_products:
-        # product = item.get('product', {})
+    for item in raw_products:
+        product = item.get('product', {})
         filtered = {
             "productSin": product.get("productSin"),
             "productCode": product.get("productCode"),
@@ -126,7 +126,7 @@ def search_products_filtered():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -169,7 +169,7 @@ def search_products():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -226,7 +226,7 @@ def browse_by_category():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "q": q,
         "offset": offset
@@ -279,7 +279,7 @@ def get_images():
         "sort": sort,
         "minPrice": minPrice,
         "maxPrice": maxPrice,
-        # "limit": limit,
+        "limit": limit,
         "dept": dept,
         "lang": lang,
         "offset": offset
@@ -533,7 +533,7 @@ def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     else:
         return None
 
-    print(json.dumps(list(prod.keys()), indent=2), file=sys.stderr)
+    # print(json.dumps(list(prod.keys()), indent=2), file=sys.stderr)
 
     first_color = (prod.get("colors") or [{}])[0]
     first_img   = (first_color.get("images") or [{}])[0].get("src", "")
