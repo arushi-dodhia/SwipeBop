@@ -50,7 +50,7 @@ def gather_product_data(desired_count=500):
     return all_products[:desired_count]
 
 def main():
-    user_id = "fakeUserF"
+    user_id = "fakeUserX"
     products = gather_product_data(DESIRED_COUNT)
 
     print(f"\nInserting {len(products)} total items for '{user_id}'\n")

@@ -499,15 +499,22 @@ def delete_all_liked():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-def fetch_product_summary(product_sin, lang="en-US"):
+def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
     url    = f"{baseURL}/public/products/{product_sin}"
-    params = {"lang": lang}
+    params = {
+        "dept": dept,
+        "lang": lang,
+        "allowOutOfStockItems": "true"
+    }
 
     raw = fetch_from_shopbop(url, params)
-    if not isinstance(raw, dict) or "product" not in raw:
-        return None
-
-    prod = raw["product"]
+    if not isinstance(raw, dict):
+        return None        # network or status error
+    if "product" in raw:
+        prod = raw["product"]
+    else:
+        prod = raw 
+        
     first_color = (prod.get("colors") or [{}])[0]
     first_img   = (first_color.get("images") or [{}])[0]
 
