@@ -3,6 +3,7 @@ import uuid
 from botocore.exceptions import ClientError
 from datetime import datetime
 from boto3.dynamodb.conditions import Key
+from zoneinfo import ZoneInfo
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
 table_name = 'outfits'
@@ -17,7 +18,7 @@ def insert_outfit(user_id, outfit):
                 'user_id': user_id,
                 'outfit_id': str(outfit_id),
                 'outfit': outfit,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now(ZoneInfo('America/Chicago')).isoformat(),
             }
         )
         return outfit_id
