@@ -2,6 +2,7 @@ import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime
 from boto3.dynamodb.conditions import Key
+from zoneinfo import ZoneInfo
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
 table_name = 'discard'
@@ -9,7 +10,7 @@ table = dynamodb.Table(table_name)
 
 def insert_item(user_id, product):
     product_id = product['productSin']
-    time = datetime.now().isoformat()
+    time = datetime.now(ZoneInfo('America/Chicago')).isoformat(),
 
     try:
         table.put_item(

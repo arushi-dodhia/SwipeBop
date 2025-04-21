@@ -5,6 +5,7 @@ from decimal import Decimal
 from botocore.exceptions import ClientError
 from datetime import datetime
 from boto3.dynamodb.conditions import Key
+from zoneinfo import ZoneInfo
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
 table = dynamodb.Table('liked')
@@ -42,7 +43,7 @@ def check_connectivity():
 
 # User likes an item
 def likeItem(user_id, product):
-    time_str = datetime.now().isoformat()
+    time_str = datetime.now(ZoneInfo('America/Chicago')).isoformat(),
     # if someone _did_ wrap it, strip off the extra layer:
     if 'product' in product and isinstance(product['product'], dict):
         product = product['product']
