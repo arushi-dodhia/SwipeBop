@@ -44,6 +44,7 @@ const SwipeBop = () => {
   const navigate = useNavigate();
   const likedScrollRef = useRef(null);
   const discardedScrollRef = useRef(null);
+  const [visited, setVisited] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -103,7 +104,7 @@ const SwipeBop = () => {
             lang: "en-US",
             currency: "USD",
             q: category,
-            limit: isLoggedIn ? 5 : 100,
+            limit: isLoggedIn ? 50 : 100,
             minPrice: 25,
             maxPrice: 500,
             siteId: 1006,
@@ -163,33 +164,118 @@ const SwipeBop = () => {
     fetchProducts();
   }, [isLoggedIn, loginChecked]);
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (!likedProducts?.items || likedProducts.items.length === 0) return;
+  const fetchRecommendations = async (likedItems) => {
+    if (!likedItems?.items || likedItems.items.length === 0) return;
+
+    for (let i = 0; i < likedItems.items.length; i++) {
       try {
-        const response = await fetch(
-          `https://swipebop-backend.online/swipebop/recommendations/${userID}`,
+        const productId = likedItems.items[i].product_id;
+        if (visited.includes(productId)) {
+          continue;
+        }
+        setVisited((prev) => [...prev, productId]);
+        console.log(productId);
+        const queryParams = new URLSearchParams({
+          productSin: productId,
+        });
+        console.log(queryParams.toString());
+        const res = await fetch(
+          `https://swipebop-backend.online/swipebop/outfits?${queryParams.toString()}`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          data.styleColorOutfits.forEach((color) => {
+            if (color.outfits && color.outfits.length > 0) {
+              color.outfits.forEach((outfit) => {
+                if (outfit.styleColors && outfit.styleColors.length > 0) {
+                  outfit.styleColors.forEach((styleColorItem) => {
+                    if (
+                      styleColorItem.product &&
+                      styleColorItem.product.productSin !== productId &&
+                      !productIds.includes(styleColorItem.product.productSin)
+                    ) {
+                      const outfitProduct = {
+                        id: styleColorItem.product.productSin,
+                        imageUrl:
+                          "https://m.media-amazon.com/images/G/01/Shopbop/p/" +
+                          styleColorItem.image.src,
+                        name: styleColorItem.product.shortDescription,
+                        brand: styleColorItem.product.designerName,
+                        price: styleColorItem.product.retailPrice.price,
+                        url:
+                          "https://shopbop.com/" +
+                          styleColorItem.product.productDetailUrl,
+                      };
+                      if (
+                        styleColorItem.product.productCategory == "FOOTWEAR"
+                      ) {
+                        outfitProduct.category = "shoes";
+                        setProducts((prevProducts) => ({
+                          ...prevProducts,
+                          shoes: [...prevProducts.shoes, outfitProduct],
+                        }));
+                        productIds.push(styleColorItem.product.productSin);
+                        return;
+                      }
+                      if (
+                        styleColorItem.image.modelFirstName == "Accessories"
+                      ) {
+                        outfitProduct.category = "accessories";
+                        setProducts((prevProducts) => ({
+                          ...prevProducts,
+                          accessories: [
+                            ...prevProducts.accessories,
+                            outfitProduct,
+                          ],
+                        }));
+                        productIds.push(styleColorItem.product.productSin);
+                        return;
+                      }
+
+                      let desc =
+                        styleColorItem.product.shortDescription.toLowerCase();
+                      if (
+                        desc.includes("pants") ||
+                        desc.includes("jeans") ||
+                        desc.includes("trousers") ||
+                        desc.includes("leggings") ||
+                        desc.includes("shorts") ||
+                        desc.includes("skirt") ||
+                        desc.includes("boxer")
+                      ) {
+                        outfitProduct.category = "pants";
+                        setProducts((prevProducts) => ({
+                          ...prevProducts,
+                          pants: [...prevProducts.pants, outfitProduct],
+                        }));
+                        productIds.push(styleColorItem.product.productSin);
+                        return;
+                      }
+                      outfitProduct.category = "shirts";
+                      setProducts((prevProducts) => ({
+                        ...prevProducts,
+                        shirts: [...prevProducts.shirts, outfitProduct],
+                      }));
+                      productIds.push(styleColorItem.product.productSin);
+                      return;
+                    }
+                  });
+                }
+              });
+            }
           });
-        if (!response.ok) {
-          throw new Error("Failed to fetch recommendations");
+        } else {
+          const err = await res.json();
+          console.error("Failed to fetch outfit match:", err);
         }
-        const data = await response.json();
-        console.log("Recommendations:", data);
-      } catch (error) {
-        console.error("Error fetching recommendations:", error);
+      } catch (err) {
+        console.error("Error in fetchOutfitMatch:", err);
       }
     }
-
-    if (isLoggedIn && likedProducts?.items) {
-      fetchRecommendations();
-    }
-    
-  }, [isLoggedIn, likedProducts]);
+  };
 
   const handleTouchStart = (e, id) => {
     startX.current[id] = e.touches[0].clientX;
@@ -230,6 +316,14 @@ const SwipeBop = () => {
       card.querySelector(".dislike-overlay").style.opacity = 0;
     }
   };
+
+  useEffect(() => {
+    if (!loginChecked) return;
+    if (isLoggedIn) {
+      fetchLikedProducts();
+      fetchDiscardedProducts();
+    }
+  }, [loginChecked]);
 
   const handleTouchEnd = (e, id) => {
     if (!isSwiping.current[id]) return;
@@ -339,6 +433,7 @@ const SwipeBop = () => {
     } catch (error) {
       console.error("Error discarding product:", error);
     }
+    fetchDiscardedProducts();
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(-1000px) rotate(-30deg)";
     setTimeout(() => removeCard(productId), 300);
@@ -413,6 +508,7 @@ const SwipeBop = () => {
       console.error("Error liking product:", error);
     }
 
+    fetchLikedProducts();
     card.style.transition = "transform 0.3s ease";
     card.style.transform = "translateX(1000px) rotate(30deg)";
     setTimeout(() => removeCard(productId), 300);
@@ -485,7 +581,11 @@ const SwipeBop = () => {
       if (res.ok) {
         const result = await res.json();
         setLikedProducts(result);
-        console.log("Liked products:", likedProducts);
+        console.log("Liked products:", result); // use `result` directly
+        if (result.items?.length > 0) {
+          fetchRecommendations(result); // not from `likedProducts`, use `result`
+        }
+        
       } else {
         const error = await res.json();
         console.error("Error fetching liked products:", error);
@@ -524,11 +624,11 @@ const SwipeBop = () => {
   };
 
   useEffect(() => {
-      if (!isLoggedIn || !userID) return;
-  
-      fetchLikedProducts();
-      fetchDiscardedProducts();
-    }, [isLoggedIn, userID]);
+    if (!isLoggedIn || !userID) return;
+
+    fetchLikedProducts();
+    fetchDiscardedProducts();
+  }, [isLoggedIn, userID]);
 
   const removeFromLiked = async (productId) => {
     console.log(userID, productId);
