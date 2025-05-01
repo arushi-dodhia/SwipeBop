@@ -12,6 +12,11 @@ from datetime import datetime
 # rec engine stuff
 # import scheduler
 from CNNengine.recommender import catalog_embeddings, build_user_embedding, hybrid_recommend
+from CNNengine.embedding_generator import generate_embedding
+from CNNengine.embedding_generator import IMAGES_DIR, EMBEDDINGS_DIR
+import numpy as np, os
+from io import BytesIO
+from PIL import Image
 
 
 app = Flask(__name__)
@@ -565,6 +570,35 @@ def itemRecommendation(user_id):
     missing = [sin for sin in liked_sins if sin not in catalog_embeddings]
     print("DEBUG: missing in catalog_embeddings =", missing)
     # ————————————————
+
+    for sin in missing:
+        # 1) Make sure we have the local JPEG
+        img_path = os.path.join(IMAGES_DIR, f"{sin}.jpg")
+        if not os.path.exists(img_path):
+            # fetch from your API
+            summary = fetch_product_summary(sin)
+            url     = summary.get("imageUrl")
+            if not url:
+                continue
+            try:
+                resp = requests.get(url, timeout=10)
+                img  = Image.open(BytesIO(resp.content)).convert("RGB")
+                img.save(img_path, "JPEG", quality=85)
+            except Exception as e:
+                print(f"Failed to download {sin}: {e}")
+                continue
+
+        # 2) Generate the embedding
+        try:
+            emb = generate_embedding(img_path)
+        except Exception as e:
+            print(f"Embedding failed for {sin}: {e}")
+            continue
+
+        # 3) Save the new vector for next time
+        np.save(os.path.join(EMBEDDINGS_DIR, f"{sin}.npy"), emb)
+        # 4) Update in-memory catalog
+        catalog_embeddings[sin] = emb
 
     if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400
