@@ -17,10 +17,15 @@ from CNNengine.embedding_generator import IMAGES_DIR, EMBEDDINGS_DIR
 import numpy as np, os
 from io import BytesIO
 from PIL import Image
+from threading import Thread
+import logging
 
 
 app = Flask(__name__)
 CORS(app)
+
+app.logger.setLevel(logging.DEBUG)
+
 
 baseURL = "https://api.shopbop.com"
 baseIMGURL = "https://m.media-amazon.com/images/G/01/Shopbop/p"
@@ -557,61 +562,57 @@ def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
 
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
-    # 1) Grab raw liked items (plain dicts)
+    # 1) Grab raw liked items
     liked_items = liked.getLikedItems(user_id)
+    liked_sins  = [item['product_id'] for item in liked_items if 'product_id' in item]
 
-    # 2) Extract product_ids
-    liked_sins = [ item['product_id'] for item in liked_items if 'product_id' in item ]
+    # early exit if nothing to do
+    if not liked_sins:
+        return jsonify({"error": "No valid liked products"}), 400
 
-    # ——— DEBUGGING ———
-    print("DEBUG: liked_items =", liked_items)
-    print("DEBUG: liked_sins   =", liked_sins)
-    print("DEBUG: catalog size =", len(catalog_embeddings))
-    missing = [sin for sin in liked_sins if sin not in catalog_embeddings]
-    print("DEBUG: missing in catalog_embeddings =", missing)
-    # ————————————————
+    # 2) Figure out which are already embedded vs missing
+    embedded_sins = [sin for sin in liked_sins if sin in catalog_embeddings]
+    missing_sins  = [sin for sin in liked_sins if sin not in catalog_embeddings]
 
-    for sin in missing:
-        # 1) Make sure we have the local JPEG
-        img_path = os.path.join(IMAGES_DIR, f"{sin}.jpg")
-        if not os.path.exists(img_path):
-            # fetch from your API
+    app.logger.debug(f"Embedded: {embedded_sins}")
+    app.logger.debug(f"Missing:  {missing_sins}")
+
+    # 3) Backfill missing ones in background
+    def backfill(sins):
+        total = len(sins)
+        for i, sin in enumerate(sins, start=1):
+            app.logger.debug(f"[{i}/{total}] Backfilling {sin}")
             summary = fetch_product_summary(sin)
             url     = summary.get("imageUrl")
             if not url:
                 continue
+
             try:
                 resp = requests.get(url, timeout=10)
                 img  = Image.open(BytesIO(resp.content)).convert("RGB")
+                img_path = os.path.join(IMAGES_DIR, f"{sin}.jpg")
                 img.save(img_path, "JPEG", quality=85)
+
+                emb = generate_embedding(img_path)
+                np.save(os.path.join(EMBEDDINGS_DIR, f"{sin}.npy"), emb)
+                catalog_embeddings[sin] = emb
+
+                app.logger.debug(f"[{i}/{total}] Done {sin}")
             except Exception as e:
-                print(f"Failed to download {sin}: {e}")
-                continue
+                app.logger.error(f"[{i}/{total}] Failed {sin}: {e}")
 
-        # 2) Generate the embedding
-        try:
-            emb = generate_embedding(img_path)
-        except Exception as e:
-            print(f"Embedding failed for {sin}: {e}")
-            continue
+    if missing_sins:
+        Thread(target=backfill, args=(missing_sins,), daemon=True).start()
 
-        # 3) Save the new vector for next time
-        np.save(os.path.join(EMBEDDINGS_DIR, f"{sin}.npy"), emb)
-        # 4) Update in-memory catalog
-        catalog_embeddings[sin] = emb
-
-    if not liked_sins:
-        return jsonify({"error": "No valid liked products"}), 400
-    
-    user_emb = build_user_embedding(liked_sins, catalog_embeddings)
+    # 4) Build a user embedding from what we do have
+    user_emb = build_user_embedding(embedded_sins, catalog_embeddings)
     if user_emb is None:
-        # return the debug info back in the JSON so you can inspect it in-browser
         return jsonify({
-            "error": "Could not build user embedding",
-            "liked_sins": liked_sins,
-            "missing_in_catalog": missing
+            "error":              "No embeddings available yet",
+            "needed_to_embed":    missing_sins
         }), 400
 
+    # 5) Get recommendations
     rec_ids = hybrid_recommend(
         user_emb,
         catalog_embeddings,
@@ -619,21 +620,19 @@ def itemRecommendation(user_id):
         top_k=20, final_n=10, random_frac=0.3
     )
 
-    # 4) Fetch summary & wrap for output
+    # 6) Wrap & return
     rec_wrapped = []
     for sin in rec_ids:
         prod = fetch_product_summary(sin)
-        if not prod:
-            continue
-        rec_wrapped.append({
-            "user_id":    user_id,
-            "product_id": sin,
-            "time":       datetime.now().isoformat(),
-            "product":    prod
-        })
+        if prod:
+            rec_wrapped.append({
+                "user_id":    user_id,
+                "product_id": sin,
+                "time":       datetime.now().isoformat(),
+                "product":    prod
+            })
 
     return jsonify({"recommendations": rec_wrapped})
-
 
 
 if __name__ == "__main__":
