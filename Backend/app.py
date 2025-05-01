@@ -552,19 +552,31 @@ def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
 
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
-    # 1) Grab the raw items (already plain dicts)
+    # 1) Grab raw liked items (plain dicts)
     liked_items = liked.getLikedItems(user_id)
 
-    # 2) Extract just the product IDs as strings
+    # 2) Extract product_ids
     liked_sins = [ item['product_id'] for item in liked_items if 'product_id' in item ]
+
+    # ——— DEBUGGING ———
+    print("DEBUG: liked_items =", liked_items)
+    print("DEBUG: liked_sins   =", liked_sins)
+    print("DEBUG: catalog size =", len(catalog_embeddings))
+    missing = [sin for sin in liked_sins if sin not in catalog_embeddings]
+    print("DEBUG: missing in catalog_embeddings =", missing)
+    # ————————————————
 
     if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400
-
-    # 3) Build user embedding & get recs
+    
     user_emb = build_user_embedding(liked_sins, catalog_embeddings)
     if user_emb is None:
-        return jsonify({"error": "Could not build user embedding"}), 400
+        # return the debug info back in the JSON so you can inspect it in-browser
+        return jsonify({
+            "error": "Could not build user embedding",
+            "liked_sins": liked_sins,
+            "missing_in_catalog": missing
+        }), 400
 
     rec_ids = hybrid_recommend(
         user_emb,
