@@ -12,7 +12,7 @@ from datetime import datetime
 # rec engine stuff
 # import scheduler
 from CNNengine.recommender import catalog_embeddings, build_user_embedding, hybrid_recommend
-from boto3.dynamodb.types import TypeDeserializer
+
 
 app = Flask(__name__)
 CORS(app)
@@ -548,28 +548,20 @@ def fetch_product_summary(product_sin, dept="WOMENS", lang="en-US"):
         "imageUrl":  img_url
     }
 
-deserializer = TypeDeserializer()
-def deserialize_item(ddb_item):
-    return {
-        k: deserializer.deserialize(v)
-        for k, v in ddb_item.items()
-    }
+
 
 @app.route('/swipebop/recommendations/<user_id>', methods=['GET'])
 def itemRecommendation(user_id):
-    # 1. Fetch raw, typed DynamoDB items
-    raw_items = liked.getLikedItems(user_id)  # returns list of {"S":…, "M":…} style dicts
+    # 1) Grab the raw items (already plain dicts)
+    liked_items = liked.getLikedItems(user_id)
 
-    # 2. Deserialize to plain Python dicts
-    liked_items = [deserialize_item(item) for item in raw_items]
-
-    # 3. Extract just the product_ids as strings
-    liked_sins = [item['product_id'] for item in liked_items]
+    # 2) Extract just the product IDs as strings
+    liked_sins = [ item['product_id'] for item in liked_items if 'product_id' in item ]
 
     if not liked_sins:
         return jsonify({"error": "No valid liked products"}), 400
 
-    # 4. Build the embedding & get recommendations
+    # 3) Build user embedding & get recs
     user_emb = build_user_embedding(liked_sins, catalog_embeddings)
     if user_emb is None:
         return jsonify({"error": "Could not build user embedding"}), 400
@@ -581,19 +573,22 @@ def itemRecommendation(user_id):
         top_k=20, final_n=10, random_frac=0.3
     )
 
-    # 5. Wrap and return
+    # 4) Fetch summary & wrap for output
     rec_wrapped = []
     for sin in rec_ids:
         prod = fetch_product_summary(sin)
-        if prod:
-            rec_wrapped.append({
-                "user_id":    user_id,
-                "product_id": sin,
-                "time":       datetime.now().isoformat(),
-                "product":    prod
-            })
+        if not prod:
+            continue
+        rec_wrapped.append({
+            "user_id":    user_id,
+            "product_id": sin,
+            "time":       datetime.now().isoformat(),
+            "product":    prod
+        })
 
     return jsonify({"recommendations": rec_wrapped})
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
