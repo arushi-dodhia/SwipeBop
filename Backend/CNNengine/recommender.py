@@ -8,11 +8,22 @@ EMBEDDINGS_DIR = "/home/ec2-user/SwipeBop/Backend/CNNengine/embeddings"
 
 def load_all_embeddings():
     catalog = {}
-    for filename in os.listdir(EMBEDDINGS_DIR):
+    print("DEBUG: Looking in", EMBEDDINGS_DIR)
+    try:
+        files = os.listdir(EMBEDDINGS_DIR)
+    except Exception as e:
+        print("DEBUG: Failed to list EMBEDDINGS_DIR:", e)
+        files = []
+    print("DEBUG: .npy files found:", [f for f in files if f.endswith(".npy")])
+
+    for filename in files:
         if filename.endswith(".npy"):
-            product_sin = filename.split(".")[0]
+            product_sin = filename[:-4]
             emb = np.load(os.path.join(EMBEDDINGS_DIR, filename))
             catalog[product_sin] = emb
+
+    print(f"DEBUG: Loaded {len(catalog)} embeddings; sample keys:", 
+          list(catalog.keys())[:10])
     return catalog
 
 def build_user_embedding(liked_product_sins, catalog_embeddings):
