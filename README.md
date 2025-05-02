@@ -13,6 +13,7 @@ https://swipebop.com/
 ---
 
 ## Setup
+### Frontend
 Clone the Repository
 ```
 https://github.com/arushi-dodhia/SwipeBop.git
@@ -23,19 +24,48 @@ Install Dependencies and Run Server
 npm install
 npm start
 ```
+
+### Backend
+Currently running on a Flask Server on an EC-2 instance.
+
+To run our flask server locally:
+```
+cd Backend
+pip install -r requirements.txt
+python3 app.py
+```
+
+You can test our local flask server by sending requests to it locally using Postman or Browser.
 ---
 
-## 🚀 Features  
-- **🔥 Swipe to Discover** – Swipe right to like an outfit, left to skip.
-- **🤖 AI-Powered Recommendations** – Get personalized suggestions based on swipes.  
-- **📌 Recently Viewed & Saved Items** – Store previous outfits for easy reference.  
-- **🔗 Shopbop API Integration** – Fetch and display live product data from Shopbop.  
-- **🌐 Serverless Architecture** – Leveraging AWS services for scalability and efficiency.  
+## Core Features
+
+### Authentication
+* User Authentication setup through AWS Cognito.
+* User Account required to use all features (Saving Liked and Discarded Items, Saving Outfits)
+
+### Swiping
+* Users are able to swipe on individual items or entire outfits.
+* Liked and Discard tables in DynamoDB to store user data.
+* Each time an individual item is liked or discarded, API calls to EC-2 instance access the tables and update them accordingly.
+* Wishlist and Discard Pile buttons show modals containing user data for liked and discarded items respectively using API calls to the EC-2 instance.
+
+### Outfits
+* Outfits database stored in DynamoDB.
+* Each time an outfit is saved or removed, DynamoDB table is called using Flask app.
+
+### Reccomendation Engine
+* Developed in Python that provides logged-in users personalized recommendations
+* Uses image embeddings and metadata regarding liked products via MobileNet.
+* Suggests similar items on top of the latest Shopbop catalog.
+
+### Contact Us
+* Service setup through Email.JS, all messages sent to our inbox.
 
 ---
 
 ## Architecture Overview  
-SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS services**:
+SwipeBop follows a **server, cloud-native approach** leveraging **AWS services**:
 
 1️⃣ **Frontend**: React.js  
 2️⃣ **Backend**: Python                       
@@ -48,24 +78,7 @@ SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS servic
 - **Frontend**: React.js
 - **Backend**: Python (Flask)
 - **Database**: AWS DynamoDB  
-- **APIs**: Shopbop API for fetching fashion products, REST API built for accessing DynamoDB Tables.
-
----
-
-## AWS Architecture for SwipeBop
-
-SwipeBop is built on a **serverless, cloud-native** infrastructure leveraging AWS services:
-
-### **🚀 AWS Services Used**
-| Service       | Purpose |
-|--------------|---------|
-| **EC2**      | Hosts backend services if not using Lambda. Useful for managing persistent API services. |
-| **DynamoDB** | NoSQL database for storing user interactions, liked items, and recommendations. |
-| **API Gateway** | Manages API requests between frontend and backend services. |
-| **Amplify**  | Hosting and deployment for frontend UI. |
-
-
----
+- **APIs**: Shopbop API for fetching fashion products, Custom REST API built for accessing DynamoDB Tables.
 
 ## 🛠️ Contributors  
 
