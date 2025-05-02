@@ -1,19 +1,21 @@
-# 🛍️ SwipeBop - The Tinder for Fashion Discovery  
 
-## 📌 Project Overview  
-SwipeBop is an **interactive, Tinder-like fashion discovery platform** designed for **Shopbop by Amazon**. It provides a **fun, personalized, and engaging shopping experience** where users can swipe through outfits, discover their personal style, and get tailored recommendations based on their preferences.
+# Swipebop
 
----
+SwipeBop is an interactive, Tinder-like fashion discovery platform designed for Shopbop by Amazon. It provides a fun, personalized, and engaging shopping experience where users can swipe through outfits, discover their personal style, and get tailored recommendations based on their preferences.
 
-## Deployed Website
+# Repository
+```
+https://github.com/arushi-dodhia/SwipeBop
+```
+
+# Deployed Website
 ```
 https://swipebop.com/
 ```
 
----
+# Setup
 
-## Setup
-### Frontend
+## Frontend
 Clone the Repository
 ```
 https://github.com/arushi-dodhia/SwipeBop.git
@@ -25,7 +27,7 @@ npm install
 npm start
 ```
 
-### Backend
+## Backend
 Currently running on a Flask Server on an EC-2 instance.
 
 To run our flask server locally:
@@ -36,7 +38,11 @@ python3 app.py
 ```
 
 You can test our local flask server by sending requests to it locally using Postman or Browser.
----
+
+# Overview
+Swipebop allows users to shop for entire outfits at once with ease, removing the need for multiple websites and tables open, ensuring a memorable and fun experience as opposed to the current monotonous and overwhelming online shopping experience.
+
+Frontend is developed in React.JS, with core features such as Swiping (liking and discard) and Saving outfits making API calls to the Backend EC-2 server running a Python Flask app.
 
 ## Core Features
 
@@ -62,27 +68,29 @@ You can test our local flask server by sending requests to it locally using Post
 ### Contact Us
 * Service setup through Email.JS, all messages sent to our inbox.
 
----
+# What Works
+* Liking / Discarding items
+* Restoring + Removing liked and discarded items.
+* Swiping on individual items + entire outfits.
+* Saving outfits to closet and features to clear closet.
+* Touch Swiping on mobile devices.
+* Recommending outfits based on current liked items.
+* User Authentication (Login, Logout, Register, Forgot Password)
+* Contact Us email services.
 
-## Architecture Overview  
-SwipeBop follows a **server, cloud-native approach** leveraging **AWS services**:
+# What Doesn't
+* Some pages are not fully responsive across all devices.
+* Recommending outfits on page render doesn't apply to all liked items.
+* No functionality to save outfits or like and discard items and being able to view them if not logged in (No Guest Account feature)
 
-1️⃣ **Frontend**: React.js  
-2️⃣ **Backend**: Python                       
-3️⃣ **Database**: DynamoDB for fast, scalable storage  
-4️⃣ **Compute**: AWS EC2 for backend processing
+# Future Work
+* Being able to use recommendation engine to generate better recommendations.
+* Guest Account implementation.
+* Ability to filter clothing items displayed.
 
----
+# Contributors  
 
-## 🛠️ Tech Stack  
-- **Frontend**: React.js
-- **Backend**: Python (Flask)
-- **Database**: AWS DynamoDB  
-- **APIs**: Shopbop API for fetching fashion products, Custom REST API built for accessing DynamoDB Tables.
-
-## 🛠️ Contributors  
-
-Meet the **team** behind SwipeBop! 🚀  
+Meet the team behind SwipeBop! 🚀  
 
 | Name | GitHub | Role |
 |------|--------|------|
@@ -91,6 +99,3 @@ Meet the **team** behind SwipeBop! 🚀
 | **Ziyuan Xue** | () | UI/UX Designer |
 | **Raihan Tanvir** | (https://github.com/nabitanvir) | Backend Development |
 | **Ryan Rumao** | (https://github.com/rrumao) | Full-Stack Development |
-
----
-
