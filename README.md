@@ -77,7 +77,7 @@ Meet the **team** behind SwipeBop! 🚀
 | **Arushi Dodhia** | (https://github.com/arushi-dodhia) | Frontend Development |
 | **Ziyuan Xue** | () | UI/UX Designer |
 | **Raihan Tanvir** | (https://github.com/nabitanvir) | Backend Development |
-| **Ryan Rumao** | (https://github.com/ryan-24-7) | Backend Development |
+| **Ryan Rumao** | (https://github.com/rrumao) | Full-Stack Development |
 
 
 ---
