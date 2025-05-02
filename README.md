@@ -79,6 +79,5 @@ Meet the **team** behind SwipeBop! 🚀
 | **Raihan Tanvir** | (https://github.com/nabitanvir) | Backend Development |
 | **Ryan Rumao** | (https://github.com/rrumao) | Full-Stack Development |
 
-
 ---
 
