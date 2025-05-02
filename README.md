@@ -5,6 +5,19 @@ SwipeBop is an **interactive, Tinder-like fashion discovery platform** designed 
 
 ---
 
+## Setup
+Clone the Repository
+```
+https://github.com/arushi-dodhia/SwipeBop.git
+```
+
+Install Dependencies and Run Server
+```
+npm install
+npm start
+```
+---
+
 ## 🚀 Features  
 - **🔥 Swipe to Discover** – Swipe right to like an outfit, left to skip.
 - **🤖 AI-Powered Recommendations** – Get personalized suggestions based on swipes.  
@@ -25,10 +38,10 @@ SwipeBop follows a **serverless, cloud-native approach** leveraging **AWS servic
 ---
 
 ## 🛠️ Tech Stack  
-- **Frontend**: React.js, Tailwind CSS
-- **Backend**: Python  
+- **Frontend**: React.js
+- **Backend**: Python (Flask)
 - **Database**: AWS DynamoDB  
-- **APIs**: Shopbop API for fetching fashion products   
+- **APIs**: Shopbop API for fetching fashion products, REST API built for accessing DynamoDB Tables.
 
 ---
 
